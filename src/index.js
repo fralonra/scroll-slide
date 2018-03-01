@@ -1,10 +1,15 @@
 const aniDuration = Symbol('aniDuration');
 const currentSlide = Symbol('currentSlide');
 const doc = Symbol('doc');
+const handleKeyboard = Symbol('handleKeyboard');
 const handleMouseWheel = Symbol('handleMouseWheel');
+const handleTouchMove = Symbol('handleTouchMove');
+const handleTouchStart = Symbol('handleTouchStart');
+const isTouching = Symbol('isTouching');
 const lastAniTime = Symbol('lastAniTime');
 const option = Symbol('option');
 const scrollInSlide = Symbol('scrollInSlide');
+const touchStartY = Symbol('touchStartY');
 const win = Symbol('win');
 const wrapper = Symbol('wrapper');
 
@@ -17,17 +22,19 @@ class Scroll {
     self[option] = {
       aniDuration: `${defaultAniDuration}ms`,
       viewport: null,
-      direction: 'vertical',
       idleTime: 200,
       loop: true,
+      keyboard: true,
       paginator: false,
       slides: []
     };
     self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
     self[doc] = null;
+    self[isTouching] = false;
     self[lastAniTime] = 0;
     self[scrollInSlide] = 0;
+    self[touchStartY] = 0;
     self[win] = null;
     self[wrapper] = null;
 
@@ -57,11 +64,16 @@ class Scroll {
     viewport.addEventListener('mousewheel', (e) => {
       self[handleMouseWheel](e);
     });
+    viewport.addEventListener('touchstart', (e) => {
+      self[handleTouchStart](e);
+    });
+    if (self[option].keyboard) {
+      self[doc].addEventListener('keydown', (e) => {
+        self[handleKeyboard](e);
+      });
+    }
 
     self[wrapper] = self[doc].createElement('div');
-    self[wrapper].style.display = 'flex';
-    self[wrapper].style['flex-flow'] = self[option].direction === 'horizontal' ?
-      'row' : 'column';
     self[wrapper].style.position = 'relative';
     self[wrapper].style.top = '0';
 
@@ -77,7 +89,7 @@ class Scroll {
     slides.forEach(s => {
       if (s.getAttribute('full') === 'true') {
         const originHeight = s.clientHeight;
-        s.style.flex = `0 0 ${Math.ceil(originHeight / viewport.clientHeight) * viewport.clientHeight}`;
+        s.style.height = Math.ceil(originHeight / viewport.clientHeight) * viewport.clientHeight;
       }
       moveEl(s, self[wrapper]);
     });
@@ -179,12 +191,30 @@ class Scroll {
     });
   }
 
+  [handleKeyboard] (e) {
+    e.preventDefault();
+
+    switch(e.key) {
+      case 'ArrowDown':
+      case 'PageDown':
+        this.scrollDown();
+        break;
+      case 'ArrowUp':
+      case 'PageUp':
+  			this.scrollUp();
+  			break;
+			default:
+        return;
+    }
+  }
+
   [handleMouseWheel] (e) {
+    e.preventDefault();
+
     const self = this;
     const now = new Date().getTime();
-    if (now - self[lastAniTime] < self[option].idleTime + self[aniDuration]) {
-			return e.preventDefault();
-    }
+    if (now - self[lastAniTime] < self[option].idleTime + self[aniDuration])
+			return;
 
     const delta = e.wheelDelta || -e.detail;
     if (delta < 0) {
@@ -194,6 +224,46 @@ class Scroll {
     }
 
     self[lastAniTime] = now;
+  }
+
+  [handleTouchMove] (e) {
+    e.preventDefault();
+
+    const self = this;
+    if (!self[isTouching]) return;
+
+    const now = new Date().getTime();
+    if (now - self[lastAniTime] < self[option].idleTime + self[aniDuration])
+      return;
+
+    if (e.touches && e.touches.length) {
+      const delta = self[touchStartY] - e.touches[0].pageY;
+      if (Math.abs(delta) < 50) return;
+      if (delta < 0) {
+        self.scrollDown();
+      } else {
+        self.scrollUp();
+      }
+      e.target.removeEventListener('touchmove', self[handleTouchMove]);
+
+      self[lastAniTime] = now;
+    }
+
+    self[touchStartY] = 0;
+    self[isTouching] = false;
+  }
+
+  [handleTouchStart] (e) {
+    e.preventDefault();
+
+    const self = this;
+    if (e.touches && e.touches.length) {
+      self[isTouching] = true;
+      self[touchStartY] = e.touches[0].pageY;
+      self[option].viewport.addEventListener('touchmove', (e) => {
+        self[handleTouchMove](e);
+      });
+    }
   }
 }
 
