@@ -14,6 +14,7 @@ const win = Symbol('win');
 const wrapper = Symbol('wrapper');
 
 const defaultAniDuration = 1000;
+const classNamePrefix = 'scroll-slide';
 
 class Scroll {
   constructor (opt = {}) {
@@ -21,12 +22,11 @@ class Scroll {
 
     self[option] = {
       aniDuration: `${defaultAniDuration}ms`,
-      viewport: null,
       idleTime: 200,
       loop: true,
       keyboard: true,
-      paginator: false,
-      slides: []
+      slides: [],
+      viewport: null
     };
     self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
@@ -42,7 +42,7 @@ class Scroll {
       self[option][k] = opt[k];
     });
 
-    const slides = self[option].slides;
+    const slides = Array.from(self[option].slides);
     slides.forEach(s => {
       if (s instanceof Element) {
       } else throw Error('section must be an instance of Element');
@@ -55,6 +55,7 @@ class Scroll {
     if (viewport === null) {
       viewport = self[doc].getElementByTagName('body')[0];
     }
+    viewport.classList.add(`${classNamePrefix}-viewport`);
     viewport.style.position = 'relative';
     viewport.style.height = '100%';
     viewport.style.overflow = 'hidden';
@@ -74,6 +75,7 @@ class Scroll {
     }
 
     self[wrapper] = self[doc].createElement('div');
+    self[wrapper].classList.add(`${classNamePrefix}-wrapper`);
     self[wrapper].style.position = 'relative';
     self[wrapper].style.top = '0';
 
@@ -87,16 +89,35 @@ class Scroll {
     self[aniDuration] = timeToMsNum(d);
 
     slides.forEach(s => {
-      if (s.getAttribute('full') === 'true') {
-        const originHeight = s.clientHeight;
-        s.style.height = Math.ceil(originHeight / viewport.clientHeight) * viewport.clientHeight;
-      }
-      moveEl(s, self[wrapper]);
+      self._initSlide(s);
     });
     moveEl(self[wrapper], viewport);
   }
 
   // PUBLIC
+  add (el, index = -1) {
+    const self = this;
+    const oldSlides = self[option].slides;
+    const newSlides = [];
+    if (index < 0 || index > oldSlides.length) index = oldSlides.length;
+
+    self._initSlide(el, index);
+    oldSlides.forEach((s, i, arr) => {
+      if (i === index) newSlides.push(el);
+      newSlides.push(s);
+    });
+    if (index === oldSlides.length) newSlides.push(el);
+
+    self[option].slides = newSlides;
+  }
+
+  remove (index) {
+    this[wrapper].removeChild(this[option].slides[index]);
+    this[option].slides = this[option].slides.filter((s, i, arr) => i !== index);
+
+    if (index === this[currentSlide]) this.scrollDownTo(0);
+  }
+
   scrollDown () {
     const self = this;
 
@@ -124,6 +145,13 @@ class Scroll {
     } else if (multiPages) {
       self[scrollInSlide] += newTopDiff;
     }
+  }
+
+  scrollDownTo (index = 0) {
+    const top = index === 0 ? 0 : this._prevSlidesHeight(index);
+    this[wrapper].style.top = top;
+    this[currentSlide] = index;
+    if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
   }
 
   scrollUp () {
@@ -154,20 +182,28 @@ class Scroll {
   toggleFull (el) {
     if (el.getAttribute('full') === 'true') {
       el.removeAttribute('full');
-      el.style.flex = '';
+      el.style.height = '';
     } else {
       el.setAttribute('full', 'true');
-      el.style.flex = `0 0 ${this[option].viewport.clientHeight}`;
+      el.style.height = this[option].viewport.clientHeight;
     }
   }
 
   // PRIVATE
+  _initSlide (el, i = null) {
+    el.classList.add(`${classNamePrefix}-slide`);
+    if (el.getAttribute('full') === 'true') {
+      const originHeight = el.clientHeight;
+      el.style.height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+    }
+    moveEl(el, this[wrapper], i);
+  }
+
   _isFirstSlide () {
     return this[currentSlide] === 0;
   }
 
   _isLastSlide () {
-    // console.log(this[currentSlide], this[option].slides.length);
     return this[currentSlide] === this[option].slides.length - 1;
   }
 
@@ -179,13 +215,13 @@ class Scroll {
     return this[option].slides[i].clientHeight > this[option].viewport.clientHeight;
   }
 
-  _prevSlidesHeight () {
+  _prevSlidesHeight (i = this[currentSlide]) {
     const self = this;
     let index = 0;
-    return Array.from(self[option].slides).reduce((a, b) => {
+    return self[option].slides.reduce((a, b) => {
       return index++ === 0 ?
         a.clientHeight :
-        (self[currentSlide] > index - 1 ?
+        (i > index - 1 ?
         a + b.clientHeight :
         a);
     });
@@ -267,8 +303,13 @@ class Scroll {
   }
 }
 
-function moveEl (el, to) {
-  to.appendChild(el);
+function moveEl (el, to, i = null) {
+  const childList = to.hasChildNodes() ? to.childNodes : [];
+
+  if (i === null || i === childList.length)
+    return to.appendChild(el);
+
+  return to.insertBefore(el, childList[i]);
 }
 
 function strToNum (str) {

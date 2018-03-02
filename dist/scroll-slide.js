@@ -9,6 +9,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var aniDuration = Symbol('aniDuration');
 var currentSlide = Symbol('currentSlide');
 var doc = Symbol('doc');
+var handleKeyboard = Symbol('handleKeyboard');
 var handleMouseWheel = Symbol('handleMouseWheel');
 var handleTouchMove = Symbol('handleTouchMove');
 var handleTouchStart = Symbol('handleTouchStart');
@@ -21,6 +22,7 @@ var win = Symbol('win');
 var wrapper = Symbol('wrapper');
 
 var defaultAniDuration = 1000;
+var classNamePrefix = 'scroll-slide';
 
 var Scroll = function () {
   function Scroll() {
@@ -32,11 +34,11 @@ var Scroll = function () {
 
     self[option] = {
       aniDuration: defaultAniDuration + 'ms',
-      viewport: null,
       idleTime: 200,
       loop: true,
-      paginator: false,
-      slides: []
+      keyboard: true,
+      slides: [],
+      viewport: null
     };
     self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
@@ -52,7 +54,7 @@ var Scroll = function () {
       self[option][k] = opt[k];
     });
 
-    var slides = self[option].slides;
+    var slides = Array.from(self[option].slides);
     slides.forEach(function (s) {
       if (s instanceof Element) {} else throw Error('section must be an instance of Element');
     });
@@ -64,6 +66,7 @@ var Scroll = function () {
     if (viewport === null) {
       viewport = self[doc].getElementByTagName('body')[0];
     }
+    viewport.classList.add(classNamePrefix + '-viewport');
     viewport.style.position = 'relative';
     viewport.style.height = '100%';
     viewport.style.overflow = 'hidden';
@@ -76,8 +79,14 @@ var Scroll = function () {
     viewport.addEventListener('touchstart', function (e) {
       self[handleTouchStart](e);
     });
+    if (self[option].keyboard) {
+      self[doc].addEventListener('keydown', function (e) {
+        self[handleKeyboard](e);
+      });
+    }
 
     self[wrapper] = self[doc].createElement('div');
+    self[wrapper].classList.add(classNamePrefix + '-wrapper');
     self[wrapper].style.position = 'relative';
     self[wrapper].style.top = '0';
 
@@ -87,11 +96,7 @@ var Scroll = function () {
     self[aniDuration] = timeToMsNum(d);
 
     slides.forEach(function (s) {
-      if (s.getAttribute('full') === 'true') {
-        var originHeight = s.clientHeight;
-        s.style.height = Math.ceil(originHeight / viewport.clientHeight) * viewport.clientHeight;
-      }
-      moveEl(s, self[wrapper]);
+      self._initSlide(s);
     });
     moveEl(self[wrapper], viewport);
   }
@@ -102,13 +107,32 @@ var Scroll = function () {
   _createClass(Scroll, [{
     key: 'add',
     value: function add(el) {
-      var i = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : -1;
+      var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : -1;
 
-      if (i === -1) i = self[option].slides.length;
+      var self = this;
+      var oldSlides = self[option].slides;
+      var newSlides = [];
+      if (index < 0 || index > oldSlides.length) index = oldSlides.length;
+
+      self._initSlide(el, index);
+      oldSlides.forEach(function (s, i, arr) {
+        if (i === index) newSlides.push(el);
+        newSlides.push(s);
+      });
+      if (index === oldSlides.length) newSlides.push(el);
+
+      self[option].slides = newSlides;
     }
   }, {
     key: 'remove',
-    value: function remove(i) {}
+    value: function remove(index) {
+      this[wrapper].removeChild(this[option].slides[index]);
+      this[option].slides = this[option].slides.filter(function (s, i, arr) {
+        return i !== index;
+      });
+
+      if (index === this[currentSlide]) this.scrollDownTo(0);
+    }
   }, {
     key: 'scrollDown',
     value: function scrollDown() {
@@ -130,6 +154,16 @@ var Scroll = function () {
       } else if (multiPages) {
         self[scrollInSlide] += newTopDiff;
       }
+    }
+  }, {
+    key: 'scrollDownTo',
+    value: function scrollDownTo() {
+      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      var top = index === 0 ? 0 : this._prevSlidesHeight(index);
+      this[wrapper].style.top = top;
+      this[currentSlide] = index;
+      if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
     }
   }, {
     key: 'scrollUp',
@@ -155,15 +189,27 @@ var Scroll = function () {
     value: function toggleFull(el) {
       if (el.getAttribute('full') === 'true') {
         el.removeAttribute('full');
-        el.style.flex = '';
+        el.style.height = '';
       } else {
         el.setAttribute('full', 'true');
-        el.style.flex = '0 0 ' + this[option].viewport.clientHeight;
+        el.style.height = this[option].viewport.clientHeight;
       }
     }
 
     // PRIVATE
 
+  }, {
+    key: '_initSlide',
+    value: function _initSlide(el) {
+      var i = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+      el.classList.add(classNamePrefix + '-slide');
+      if (el.getAttribute('full') === 'true') {
+        var originHeight = el.clientHeight;
+        el.style.height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+      }
+      moveEl(el, this[wrapper], i);
+    }
   }, {
     key: '_isFirstSlide',
     value: function _isFirstSlide() {
@@ -172,7 +218,6 @@ var Scroll = function () {
   }, {
     key: '_isLastSlide',
     value: function _isLastSlide() {
-      // console.log(this[currentSlide], this[option].slides.length);
       return this[currentSlide] === this[option].slides.length - 1;
     }
   }, {
@@ -188,11 +233,31 @@ var Scroll = function () {
   }, {
     key: '_prevSlidesHeight',
     value: function _prevSlidesHeight() {
+      var i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this[currentSlide];
+
       var self = this;
       var index = 0;
-      return Array.from(self[option].slides).reduce(function (a, b) {
-        return index++ === 0 ? a.clientHeight : self[currentSlide] > index - 1 ? a + b.clientHeight : a;
+      return self[option].slides.reduce(function (a, b) {
+        return index++ === 0 ? a.clientHeight : i > index - 1 ? a + b.clientHeight : a;
       });
+    }
+  }, {
+    key: handleKeyboard,
+    value: function value(e) {
+      e.preventDefault();
+
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'PageDown':
+          this.scrollDown();
+          break;
+        case 'ArrowUp':
+        case 'PageUp':
+          this.scrollUp();
+          break;
+        default:
+          return;
+      }
     }
   }, {
     key: handleMouseWheel,
@@ -259,7 +324,13 @@ var Scroll = function () {
 }();
 
 function moveEl(el, to) {
-  to.appendChild(el);
+  var i = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+  var childList = to.hasChildNodes() ? to.childNodes : [];
+
+  if (i === null || i === childList.length) return to.appendChild(el);
+
+  return to.insertBefore(el, childList[i]);
 }
 
 function strToNum(str) {
