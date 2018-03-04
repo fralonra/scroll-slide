@@ -9,6 +9,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var aniDuration = Symbol('aniDuration');
 var currentSlide = Symbol('currentSlide');
 var doc = Symbol('doc');
+var dotList = Symbol('dotList');
+var handleDotClick = Symbol('handleDotClick');
 var handleKeyboard = Symbol('handleKeyboard');
 var handleMouseWheel = Symbol('handleMouseWheel');
 var handleTouchMove = Symbol('handleTouchMove');
@@ -16,6 +18,7 @@ var handleTouchStart = Symbol('handleTouchStart');
 var isTouching = Symbol('isTouching');
 var lastAniTime = Symbol('lastAniTime');
 var option = Symbol('option');
+var paginator = Symbol('paginator');
 var scrollInSlide = Symbol('scrollInSlide');
 var touchStartY = Symbol('touchStartY');
 var win = Symbol('win');
@@ -34,17 +37,22 @@ var Scroll = function () {
 
     self[option] = {
       aniDuration: defaultAniDuration + 'ms',
+      dotColor: '#e1e1e1',
+      dotActiveCOlor: '#6687ff',
       idleTime: 200,
       loop: true,
       keyboard: true,
+      paginator: 'none',
       slides: [],
       viewport: null
     };
     self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
     self[doc] = null;
+    self[dotList] = null;
     self[isTouching] = false;
     self[lastAniTime] = 0;
+    self[paginator] = null;
     self[scrollInSlide] = 0;
     self[touchStartY] = 0;
     self[win] = null;
@@ -54,7 +62,8 @@ var Scroll = function () {
       self[option][k] = opt[k];
     });
 
-    var slides = Array.from(self[option].slides);
+    self[option].slides = Array.from(self[option].slides);
+    var slides = self[option].slides;
     slides.forEach(function (s) {
       if (s instanceof Element) {} else throw Error('section must be an instance of Element');
     });
@@ -99,6 +108,13 @@ var Scroll = function () {
       self._initSlide(s);
     });
     moveEl(self[wrapper], viewport);
+
+    if (self[option].paginator !== 'none' && self[option].paginator !== 'left' && self[option].paginator !== 'right') self[option].paginator = 'none';
+    if (self[option].paginator !== 'none') {
+      viewport.style.position = 'relative';
+      self[paginator] = this[doc].createElement('div');
+      self._initPaginator();
+    }
   }
 
   // PUBLIC
@@ -115,23 +131,37 @@ var Scroll = function () {
       if (index < 0 || index > oldSlides.length) index = oldSlides.length;
 
       self._initSlide(el, index);
-      oldSlides.forEach(function (s, i, arr) {
-        if (i === index) newSlides.push(el);
-        newSlides.push(s);
-      });
-      if (index === oldSlides.length) newSlides.push(el);
 
-      self[option].slides = newSlides;
+      self[option].slides = insert(self[option].slides, index, el);
+      if (index <= self[currentSlide]) {
+        self[wrapper].style.top = -self._prevSlidesHeight(++self[currentSlide]);
+      }
+
+      if (self[option].paginator !== 'none') {
+        self._addDot(index);
+        if (index <= self[currentSlide]) self._changePaginator(self[currentSlide] - 1, self[currentSlide]);
+      }
     }
   }, {
     key: 'remove',
     value: function remove(index) {
+      if (index === this[currentSlide]) {
+        if (index === this[option].slides.length - 1) this.scrollTo(0);
+      }
+
+      if (index < this[currentSlide]) {
+        this.scrollTo(this[currentSlide] - 1);
+      }
+
+      if (this[option].paginator !== 'none') {
+        this._removeDot(index);
+        if (index <= this[currentSlide]) this._changePaginator(this[currentSlide] - 1, this[currentSlide]);
+      }
+
       this[wrapper].removeChild(this[option].slides[index]);
       this[option].slides = this[option].slides.filter(function (s, i, arr) {
         return i !== index;
       });
-
-      if (index === this[currentSlide]) this.scrollDownTo(0);
     }
   }, {
     key: 'scrollDown',
@@ -149,6 +179,7 @@ var Scroll = function () {
       self[wrapper].style.top = self._isLastSlide() ? 0 : top - newTopDiff;
 
       if (!multiPages || multiPages && self[scrollInSlide] + newTopDiff === slides[self[currentSlide]].clientHeight) {
+        self._changePaginator(self[currentSlide], nextSlide);
         self[currentSlide] = nextSlide;
         if (self[scrollInSlide] !== 0) self[scrollInSlide] = 0;
       } else if (multiPages) {
@@ -156,12 +187,15 @@ var Scroll = function () {
       }
     }
   }, {
-    key: 'scrollDownTo',
-    value: function scrollDownTo() {
+    key: 'scrollTo',
+    value: function scrollTo() {
       var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
+      var length = this[option].slides.length - 1;
+      if (index < 0) index = length;else if (index > length) index = 0;
       var top = index === 0 ? 0 : this._prevSlidesHeight(index);
-      this[wrapper].style.top = top;
+      this[wrapper].style.top = -top;
+      if (this[option].paginator !== 'none' && this[currentSlide] !== index) this._changePaginator(this[currentSlide], index);
       this[currentSlide] = index;
       if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
     }
@@ -179,6 +213,7 @@ var Scroll = function () {
       self[wrapper].style.top = self._isFirstSlide() ? slides[slides.length - 1].clientHeight - self[wrapper].clientHeight : self[scrollInSlide] === 0 ? top + slides[lastSlide].clientHeight : top + self[scrollInSlide];
 
       if (self[scrollInSlide] === 0) {
+        self._changePaginator(self[currentSlide], lastSlide);
         self[currentSlide] = lastSlide;
       } else {
         self[scrollInSlide] = 0;
@@ -198,6 +233,106 @@ var Scroll = function () {
 
     // PRIVATE
 
+  }, {
+    key: '_changePaginator',
+    value: function _changePaginator(oldDot, newDot) {
+      var self = this;
+      self[dotList].forEach(function (d, i, arr) {
+        if (newDot === i) {
+          d.classList.add(classNamePrefix + '-paginator-dot-active');
+          d.style.background = self[option].dotActiveCOlor;
+        } else if (oldDot === i) {
+          d.classList.remove(classNamePrefix + '-paginator-dot-active');
+          d.style.background = self[option].dotColor;
+        }
+      });
+    }
+  }, {
+    key: '_addDot',
+    value: function _addDot() {
+      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      this._initDot(index);
+
+      this[dotList].forEach(function (d, i, arr) {
+        if (i > index) d.setAttribute('index', Number(d.getAttribute('index')) + 1);
+      });
+      this._initPaginatorTop();
+    }
+  }, {
+    key: '_removeDot',
+    value: function _removeDot() {
+      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      var dot = this[dotList][index];
+      this[paginator].removeChild(dot);
+      this[dotList].forEach(function (d, i, arr) {
+        if (i > index) d.setAttribute('index', i - 1);
+      });
+      this[dotList].splice(index, 1);
+      this._initPaginatorTop();
+    }
+  }, {
+    key: '_initDot',
+    value: function _initDot() {
+      var _this = this;
+
+      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      var dot = this[doc].createElement('div');
+      dot.setAttribute('index', index);
+      dot.classList.add(classNamePrefix + '-paginator-dot');
+      dot.style.width = '0.75rem';
+      dot.style.height = '0.75rem';
+      dot.style.background = this[option].dotColor;
+      dot.style.margin = '0.5rem auto';
+      dot.style.borderRadius = '50%';
+      dot.style.transition = 'all 0.5s ease 0s';
+      dot.style.cursor = 'pointer';
+
+      if (index === this[currentSlide]) {
+        dot.classList.add(classNamePrefix + '-paginator-dot-active');
+        dot.style.background = this[option].dotActiveCOlor;
+      }
+
+      dot.addEventListener('click', function (e) {
+        _this[handleDotClick](e);
+      });
+
+      this[dotList] = insert(this[dotList], index, dot);
+      moveEl(dot, this[paginator], index);
+    }
+  }, {
+    key: '_initDotList',
+    value: function _initDotList() {
+      var _this2 = this;
+
+      this[dotList] = [];
+      this[option].slides.forEach(function (s, i, arr) {
+        _this2._initDot(i);
+      });
+    }
+  }, {
+    key: '_initPaginator',
+    value: function _initPaginator() {
+      var pos = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this[option].paginator;
+
+      var p = this[paginator];
+      p.classList.add(classNamePrefix + '-paginator');
+      p.style.position = 'absolute';
+      p.style[pos] = this[wrapper].clientWidth * 0.05;
+
+      this._initDotList();
+
+      this[option].viewport.appendChild(p);
+      p.style.top = '50%';
+      this._initPaginatorTop();
+    }
+  }, {
+    key: '_initPaginatorTop',
+    value: function _initPaginatorTop() {
+      this[paginator].style.marginTop = -this[paginator].clientHeight / 2;
+    }
   }, {
     key: '_initSlide',
     value: function _initSlide(el) {
@@ -233,13 +368,25 @@ var Scroll = function () {
   }, {
     key: '_prevSlidesHeight',
     value: function _prevSlidesHeight() {
-      var i = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this[currentSlide];
+      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this[currentSlide];
 
       var self = this;
-      var index = 0;
-      return self[option].slides.reduce(function (a, b) {
-        return index++ === 0 ? a.clientHeight : i > index - 1 ? a + b.clientHeight : a;
+      var heights = 0;
+      self[option].slides.forEach(function (s, i, arr) {
+        if (index <= i) return;
+        heights += s.clientHeight;
       });
+      return heights;
+    }
+  }, {
+    key: handleDotClick,
+    value: function value(e) {
+      e.preventDefault();
+
+      var index = Number(e.target.getAttribute('index')) || 0;
+      if (index === this[currentSlide]) return;
+
+      this.scrollTo(index);
     }
   }, {
     key: handleKeyboard,
@@ -322,6 +469,16 @@ var Scroll = function () {
 
   return Scroll;
 }();
+
+function insert(arr, index, el) {
+  var newArr = [];
+  arr.forEach(function (a, i, array) {
+    if (i === index) newArr.push(el);
+    newArr.push(a);
+  });
+  if (index === arr.length) newArr.push(el);
+  return newArr;
+}
 
 function moveEl(el, to) {
   var i = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;

@@ -1,6 +1,8 @@
 const aniDuration = Symbol('aniDuration');
 const currentSlide = Symbol('currentSlide');
 const doc = Symbol('doc');
+const dotList = Symbol('dotList');
+const handleDotClick = Symbol('handleDotClick');
 const handleKeyboard = Symbol('handleKeyboard');
 const handleMouseWheel = Symbol('handleMouseWheel');
 const handleTouchMove = Symbol('handleTouchMove');
@@ -8,6 +10,7 @@ const handleTouchStart = Symbol('handleTouchStart');
 const isTouching = Symbol('isTouching');
 const lastAniTime = Symbol('lastAniTime');
 const option = Symbol('option');
+const paginator = Symbol('paginator');
 const scrollInSlide = Symbol('scrollInSlide');
 const touchStartY = Symbol('touchStartY');
 const win = Symbol('win');
@@ -22,17 +25,22 @@ class Scroll {
 
     self[option] = {
       aniDuration: `${defaultAniDuration}ms`,
+      dotColor: '#e1e1e1',
+      dotActiveCOlor: '#6687ff',
       idleTime: 200,
       loop: true,
       keyboard: true,
+      paginator: 'none',
       slides: [],
       viewport: null
     };
     self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
     self[doc] = null;
+    self[dotList] = null;
     self[isTouching] = false;
     self[lastAniTime] = 0;
+    self[paginator] = null;
     self[scrollInSlide] = 0;
     self[touchStartY] = 0;
     self[win] = null;
@@ -42,7 +50,8 @@ class Scroll {
       self[option][k] = opt[k];
     });
 
-    const slides = Array.from(self[option].slides);
+    self[option].slides = Array.from(self[option].slides);
+    const slides = self[option].slides;
     slides.forEach(s => {
       if (s instanceof Element) {
       } else throw Error('section must be an instance of Element');
@@ -92,6 +101,16 @@ class Scroll {
       self._initSlide(s);
     });
     moveEl(self[wrapper], viewport);
+
+    if (self[option].paginator !== 'none' &&
+        self[option].paginator !== 'left' &&
+        self[option].paginator !== 'right')
+      self[option].paginator = 'none';
+    if (self[option].paginator !== 'none') {
+      viewport.style.position = 'relative';
+      self[paginator] = this[doc].createElement('div');
+      self._initPaginator();
+    }
   }
 
   // PUBLIC
@@ -102,20 +121,37 @@ class Scroll {
     if (index < 0 || index > oldSlides.length) index = oldSlides.length;
 
     self._initSlide(el, index);
-    oldSlides.forEach((s, i, arr) => {
-      if (i === index) newSlides.push(el);
-      newSlides.push(s);
-    });
-    if (index === oldSlides.length) newSlides.push(el);
 
-    self[option].slides = newSlides;
+    self[option].slides = insert(self[option].slides, index, el);
+    if (index <= self[currentSlide]) {
+      self[wrapper].style.top = -self._prevSlidesHeight(++self[currentSlide]);
+    }
+
+    if (self[option].paginator !== 'none') {
+      self._addDot(index);
+      if (index <= self[currentSlide])
+        self._changePaginator(self[currentSlide] - 1, self[currentSlide]);
+    }
   }
 
   remove (index) {
+    if (index === this[currentSlide]) {
+      if (index === this[option].slides.length - 1)
+        this.scrollTo(0);
+    }
+
+    if (index < this[currentSlide]) {
+      this.scrollTo(this[currentSlide] - 1);
+    }
+
+    if (this[option].paginator !== 'none') {
+      this._removeDot(index);
+      if (index <= this[currentSlide])
+        this._changePaginator(this[currentSlide] - 1, this[currentSlide]);
+    }
+
     this[wrapper].removeChild(this[option].slides[index]);
     this[option].slides = this[option].slides.filter((s, i, arr) => i !== index);
-
-    if (index === this[currentSlide]) this.scrollDownTo(0);
   }
 
   scrollDown () {
@@ -140,6 +176,7 @@ class Scroll {
       0 : top - newTopDiff;
 
     if (!multiPages || (multiPages && self[scrollInSlide] + newTopDiff === slides[self[currentSlide]].clientHeight)) {
+      self._changePaginator(self[currentSlide], nextSlide);
       self[currentSlide] = nextSlide;
       if (self[scrollInSlide] !== 0) self[scrollInSlide] = 0;
     } else if (multiPages) {
@@ -147,9 +184,14 @@ class Scroll {
     }
   }
 
-  scrollDownTo (index = 0) {
+  scrollTo (index = 0) {
+    const length = this[option].slides.length - 1;
+    if (index < 0) index = length;
+    else if (index > length) index = 0;
     const top = index === 0 ? 0 : this._prevSlidesHeight(index);
-    this[wrapper].style.top = top;
+    this[wrapper].style.top = -top;
+    if (this[option].paginator !== 'none' && this[currentSlide] !== index)
+      this._changePaginator(this[currentSlide], index);
     this[currentSlide] = index;
     if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
   }
@@ -173,6 +215,7 @@ class Scroll {
       top + self[scrollInSlide]);
 
     if (self[scrollInSlide] === 0) {
+      self._changePaginator(self[currentSlide], lastSlide);
       self[currentSlide] = lastSlide;
     } else {
       self[scrollInSlide] = 0;
@@ -190,6 +233,87 @@ class Scroll {
   }
 
   // PRIVATE
+  _changePaginator (oldDot, newDot) {
+    const self = this;
+    self[dotList].forEach((d, i, arr) => {
+      if (newDot === i) {
+        d.classList.add(`${classNamePrefix}-paginator-dot-active`);
+        d.style.background = self[option].dotActiveCOlor;
+      } else if (oldDot === i) {
+        d.classList.remove(`${classNamePrefix}-paginator-dot-active`);
+        d.style.background = self[option].dotColor;
+      }
+    });
+  }
+
+  _addDot (index = 0) {
+    this._initDot(index);
+
+    this[dotList].forEach((d, i, arr) => {
+      if (i > index) d.setAttribute('index', Number(d.getAttribute('index')) + 1);
+    });
+    this._initPaginatorTop();
+  }
+
+  _removeDot (index = 0) {
+    const dot = this[dotList][index];
+    this[paginator].removeChild(dot);
+    this[dotList].forEach((d, i, arr) => {
+      if (i > index) d.setAttribute('index', i - 1);
+    });
+    this[dotList].splice(index, 1);
+    this._initPaginatorTop();
+  }
+
+  _initDot (index = 0) {
+    const dot = this[doc].createElement('div');
+    dot.setAttribute('index', index);
+    dot.classList.add(`${classNamePrefix}-paginator-dot`);
+    dot.style.width = '0.75rem';
+    dot.style.height = '0.75rem';
+    dot.style.background = this[option].dotColor;
+    dot.style.margin = '0.5rem auto';
+    dot.style.borderRadius = '50%';
+    dot.style.transition = `all 0.5s ease 0s`;
+    dot.style.cursor = 'pointer';
+
+    if (index === this[currentSlide]) {
+      dot.classList.add(`${classNamePrefix}-paginator-dot-active`);
+      dot.style.background = this[option].dotActiveCOlor;
+    }
+
+    dot.addEventListener('click', (e) => {
+      this[handleDotClick](e);
+    });
+
+    this[dotList] = insert(this[dotList], index, dot);
+    moveEl(dot, this[paginator], index);
+  }
+
+  _initDotList () {
+    this[dotList] = [];
+    this[option].slides.forEach((s, i, arr) => {
+      this._initDot(i);
+    });
+  }
+
+  _initPaginator (pos = this[option].paginator) {
+    const p = this[paginator];
+    p.classList.add(`${classNamePrefix}-paginator`);
+    p.style.position = 'absolute';
+    p.style[pos] = this[wrapper].clientWidth * 0.05;
+
+    this._initDotList();
+
+    this[option].viewport.appendChild(p);
+    p.style.top = '50%';
+    this._initPaginatorTop();
+  }
+
+  _initPaginatorTop () {
+    this[paginator].style.marginTop = -this[paginator].clientHeight / 2;
+  }
+
   _initSlide (el, i = null) {
     el.classList.add(`${classNamePrefix}-slide`);
     if (el.getAttribute('full') === 'true') {
@@ -215,16 +339,23 @@ class Scroll {
     return this[option].slides[i].clientHeight > this[option].viewport.clientHeight;
   }
 
-  _prevSlidesHeight (i = this[currentSlide]) {
+  _prevSlidesHeight (index = this[currentSlide]) {
     const self = this;
-    let index = 0;
-    return self[option].slides.reduce((a, b) => {
-      return index++ === 0 ?
-        a.clientHeight :
-        (i > index - 1 ?
-        a + b.clientHeight :
-        a);
+    let heights = 0;
+    self[option].slides.forEach((s, i, arr) => {
+      if (index <= i) return;
+      heights += s.clientHeight;
     });
+    return heights;
+  }
+
+  [handleDotClick] (e) {
+    e.preventDefault();
+
+    const index = Number(e.target.getAttribute('index')) || 0;
+    if (index === this[currentSlide]) return;
+
+    this.scrollTo(index);
   }
 
   [handleKeyboard] (e) {
@@ -301,6 +432,16 @@ class Scroll {
       });
     }
   }
+}
+
+function insert (arr, index, el) {
+  const newArr = [];
+  arr.forEach((a, i, array) => {
+    if (i === index) newArr.push(el);
+    newArr.push(a);
+  });
+  if (index === arr.length) newArr.push(el);
+  return newArr;
 }
 
 function moveEl (el, to, i = null) {
