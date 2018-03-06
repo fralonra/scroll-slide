@@ -4,7 +4,7 @@
 
 Flexible and pure-js scrollable slides maker.
 
-[demo](https://fralonra.github.io/scroll-slide/demo)
+[demo](https://fralonra.github.io/scroll-slide/demo/)
 
 # Features
 * No other requirements like jquery.
