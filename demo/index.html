@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll Slide</title>
+    <link href="index.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="../dist/scroll-slide.min.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Scroll Slide</h1>
+        <h3>Flexible and pure-js scrollable slides maker.</h3>
+        <a href="https://github.com/fralonra/scroll-slide">REPO & DOC</a>
+      </header>
+
+      <a href="https://github.com/fralonra/scroll-slide"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
+      <div class="main">
+        <section>
+          <h2 class="section-title">Usage</h2>
+          <div class="section-content">
+            Install the package via npm:
+            <pre><code>npm install scroll-slide</code></pre>
+            Or simply download files from this <a href="https://github.com/fralonra/scroll-slide/releases">repo</a>.
+          </div>
+        </section>
+        <section>
+          <h2 class="section-title">API</h2>
+          <div class="section-content">
+            Please visit <a href="https://github.com/fralonra/scroll-slide">repo</a>
+            to see guides.
+          </div>
+        </section>
+        <section>
+          <h2 class="section-title">Basic Examples</h2>
+          <div class="section-content">
+            A very basic example with four slides, those heights are all the same as the viewport's height. If <code class="code-word">style.height</code> of viewport is undefined, viewport's height will be set to it's parent's height.
+          </div>
+          <div class="section-demo">
+            <div class="code">
+              <pre><code class="html">
+  &lt;div style="height: 200px" id="viewport1"&gt;
+    &lt;section class="slide" style="height: 200px; background: green;"&gt;Slide 1&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: red;"&gt;Slide 2&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: orange;"&gt;Slide 3&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: blue;"&gt;Slide 4&lt;/section&gt;
+  &lt;/div&gt;
+              </code></pre>
+              <pre><code class="javascript">
+  scroll({
+    viewport: document.getElementById('viewport1'),
+    slides: document.querySelectorAll('#viewport1 section')
+  });
+              </code></pre>
+            </div>
+            <div class="showcase">
+              <div style="height: 200px" id="viewport1">
+                <section class="slide" style="height: 200px; background: green;">Slide 1</section>
+                <section class="slide" style="height: 200px; background: red;">Slide 2</section>
+                <section class="slide" style="height: 200px; background: orange;">Slide 3</section>
+                <section class="slide" style="height: 200px; background: blue;">Slide 4</section>
+              </div>
+            </div>
+            <script type="text/javascript">
+            scroll({
+              viewport: document.getElementById('viewport1'),
+              slides: document.querySelectorAll('#viewport1 section')
+            });
+            </script>
+          </div>
+        </section>
+        <section>
+          <div class="section-content">
+            <b>Slides with different heights.</b>
+          </div>
+          <div class="section-demo">
+            <div class="code">
+              <pre><code class="html">
+  &lt;div style="height: 200px" id="viewport2"&gt;
+    &lt;section class="slide" style="height: 100px; background: green;"&gt;Slide 1&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: red;"&gt;Slide 2&lt;/section&gt;
+    &lt;section class="slide" style="height: 50px; background: orange;"&gt;Slide 3&lt;/section&gt;
+    &lt;section class="slide" style="background: blue;"&gt;Slide 4&lt;br&gt;&lt;br&gt;A&lt;br&gt;&lt;br&gt;LONG&lt;br&gt;&lt;br&gt;SLIDE&lt;br&gt;&lt;br&gt;!&lt;br&gt;&lt;/section&gt;
+  &lt;/div&gt;
+              </code></pre>
+              <pre><code class="javascript">
+  scroll({
+    viewport: document.getElementById('viewport2'),
+    slides: document.querySelectorAll('#viewport2 section')
+  });
+              </code></pre>
+            </div>
+            <div class="showcase">
+              <div style="height: 200px" id="viewport2">
+                <section class="slide" style="height: 100px; background: green;">Slide 1</section>
+                <section class="slide" style="height: 200px; background: red;">Slide 2</section>
+                <section class="slide" style="height: 50px; background: orange;">Slide 3</section>
+                <section class="slide" style="background: blue;">Slide 4<br><br>A<br><br>LONG<br><br>SLIDE<br><br>!<br></section>
+              </div>
+            </div>
+            <script type="text/javascript">
+            scroll({
+              viewport: document.getElementById('viewport2'),
+              slides: document.querySelectorAll('#viewport2 section')
+            });
+            </script>
+          </div>
+        </section>
+        <section>
+          <div class="section-content">
+            <b>With paginator.</b> You can put a paginator on either left or right side of the viewport.
+          </div>
+          <div class="section-demo">
+            <div class="code">
+              <pre><code class="html">
+  &lt;div style="height: 200px" id="viewport3"&gt;
+    &lt;section class="slide" style="height: 200px; background: green;"&gt;Slide 1&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: red;"&gt;Slide 2&lt;/section&gt;
+    &lt;section class="slide" style="height: 100px; background: orange;"&gt;Slide 3&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: blue;"&gt;Slide 4&lt;/section&gt;
+  &lt;/div&gt;
+              </code></pre>
+              <pre><code class="javascript">
+  scroll({
+    viewport: document.getElementById('viewport3'),
+    slides: document.querySelectorAll('#viewport3 section'),
+    paginator: 'right'
+  });
+              </code></pre>
+            </div>
+            <div class="showcase">
+              <div style="height: 200px" id="viewport3">
+                <section class="slide" style="height: 200px; background: green;">Slide 1</section>
+                <section class="slide" style="height: 200px; background: red;">Slide 2</section>
+                <section class="slide" style="height: 100px; background: orange;">Slide 3</section>
+                <section class="slide" style="height: 200px; background: blue;">Slide 4</section>
+              </div>
+            </div>
+            <script type="text/javascript">
+            scroll({
+              viewport: document.getElementById('viewport3'),
+              slides: document.querySelectorAll('#viewport3 section'),
+              paginator: 'right'
+            });
+            </script>
+          </div>
+        </section>
+        <section>
+          <div class="section-content">
+            <b>Slides with full mode.</b> The slide with <code class="code-word">full</code> attribute set to "true" will fill the viewport. If it's original height is larger than viewport's height, it will become a multi-pages slide (Slide 4). If the original height is smaller than viewport's height, the slide won't be larger than the viewport (Slide 3).
+          </div>
+          <div class="section-demo">
+            <div class="code">
+              <pre><code class="html">
+  &lt;div style="height: 200px" id="viewport4"&gt;
+    &lt;section class="slide" style="background: green;" full="true"&gt;Slide 1&lt;br&gt;With &lt;code&gt;full&lt;/code&gt; set to "true"&lt;/section&gt;
+    &lt;section class="slide" style="background: red;"&gt;Slide 2&lt;br&gt;Without &lt;code&gt;full&lt;/code&gt; set to "true"&lt;/section&gt;
+    &lt;section class="slide" style="height: 50px; background: orange;" full="true"&gt;Slide 3&lt;br&gt;With &lt;code&gt;full&lt;/code&gt; set to "true"&lt;br&gt;A&lt;br&gt;&lt;br&gt;LONG&lt;br&gt;&lt;br&gt;SLIDE&lt;br&gt;&lt;br&gt;!&lt;br&gt;&lt;/section&gt;
+    &lt;section class="slide" style="height: 350px; background: blue;" full="true"&gt;Slide 4&lt;br&gt;With &lt;code&gt;full&lt;/code&gt; set to "true"&lt;br&gt;A&lt;br&gt;&lt;br&gt;MUTI-PAGES&lt;br&gt;&lt;br&gt;SLIDE&lt;br&gt;&lt;br&gt;!&lt;br&gt;&lt;/section&gt;
+  &lt;/div&gt;
+              </code></pre>
+              <pre><code class="javascript">
+  scroll({
+    viewport: document.getElementById('viewport4'),
+    slides: document.querySelectorAll('#viewport4 section')
+  });
+              </code></pre>
+            </div>
+            <div class="showcase">
+              <div style="height: 200px" id="viewport4">
+                <section class="slide" style="background: green;" full="true">Slide 1<br>With <code>full</code> set to "true"</section>
+                <section class="slide" style="background: red;">Slide 2<br>Without <code>full</code> set to "true"</section>
+                <section class="slide" style="height: 50px; background: orange;" full="true">Slide 3<br>With <code>full</code> set to "true"<br>A<br><br>LONG<br><br>SLIDE<br><br>!<br></section>
+                <section class="slide" style="height: 350px; background: blue;" full="true">Slide 4<br>With <code>full</code> set to "true"<br>A<br><br>MUTI-PAGES<br><br>SLIDE<br><br>!<br></section>
+              </div>
+            </div>
+            <script type="text/javascript">
+            scroll({
+              viewport: document.getElementById('viewport4'),
+              slides: document.querySelectorAll('#viewport4 section')
+            });
+            </script>
+          </div>
+        </section>
+        <section>
+          <div class="section-content">
+            <b>Add or remove slides programatically.</b> Use <code class="code-word">add(el, index)</code> and <code class="code-word">remove(index)</code> to do it.
+          </div>
+          <div class="section-demo">
+            <div class="code">
+              <pre><code class="html">
+  &lt;div style="height: 200px" id="viewport5"&gt;
+    &lt;section class="slide" style="height: 200px; background: green;"&gt;Slide 1&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: red;"&gt;Slide 2&lt;/section&gt;
+    &lt;section class="slide" style="height: 100px; background: orange;"&gt;Slide 3&lt;/section&gt;
+    &lt;section class="slide" style="height: 200px; background: blue;"&gt;Slide 4&lt;/section&gt;
+  &lt;/div&gt;
+              </code></pre>
+              <pre><code class="javascript">
+  const s = scroll({
+    viewport: document.getElementById('viewport5'),
+    slides: document.querySelectorAll('#viewport5 section'),
+    paginator: 'right'
+  });
+  const vp = document.getElementById('viewport5');
+  document.getElementById('button-add').addEventListener('click', function(e) {
+    const slide = document.createElement('section');
+    slide.classList.add('slide');
+    slide.style.background = 'grey';
+    section.innerHTML = `Slide ${vp.childList.length + 1}`;
+    s.add(slide);
+  });
+  document.getElementById('button-remove').addEventListener('click', function(e) {
+    s.remove(0);
+  });
+              </code></pre>
+            </div>
+            <div class="showcase">
+              <div style="height: 200px" id="viewport5">
+                <section class="slide" style="height: 200px; background: green;">Slide 1</section>
+                <section class="slide" style="height: 200px; background: red;">Slide 2</section>
+                <section class="slide" style="height: 100px; background: orange;">Slide 3</section>
+                <section class="slide" style="height: 200px; background: blue;">Slide 4</section>
+              </div>
+              <div class="col" style="padding: 0.5rem;">
+                <button id="button-add" class="btn btn-green" style="margin: 0.5rem 0;">Click to add new slide</button>
+                <button id="button-remove" class="btn btn-red" style="margin: 0.5rem 0;">Click to remove first slide</button>
+              </div>
+            </div>
+            <script type="text/javascript">
+            const s = scroll({
+              viewport: document.getElementById('viewport5'),
+              slides: document.querySelectorAll('#viewport5 section'),
+              paginator: 'right'
+            });
+            const vp = document.getElementById('viewport5');
+            document.getElementById('button-add').addEventListener('click', function(e) {
+              const slide = document.createElement('section');
+              slide.classList.add('slide');
+              slide.style.background = 'grey';
+              slide.innerHTML = 'New SLide';
+              s.add(slide);
+            });
+            document.getElementById('button-remove').addEventListener('click', function(e) {
+              s.remove(0);
+            });
+            </script>
+          </div>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 {
   "name": "scroll-slide",
   "version": "0.1.0",
-  "description": "",
+  "description": "Flexible and pure-js scrollable slides maker.",
   "main": "index.js",
   "scripts": {
     "build": "npm install && gulp build",

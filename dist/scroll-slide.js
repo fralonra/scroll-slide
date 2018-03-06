@@ -38,7 +38,7 @@ var Scroll = function () {
     self[option] = {
       aniDuration: defaultAniDuration + 'ms',
       dotColor: '#e1e1e1',
-      dotActiveCOlor: '#6687ff',
+      dotActiveColor: '#6687ff',
       idleTime: 200,
       loop: true,
       keyboard: true,
@@ -77,7 +77,7 @@ var Scroll = function () {
     }
     viewport.classList.add(classNamePrefix + '-viewport');
     viewport.style.position = 'relative';
-    viewport.style.height = '100%';
+    if (viewport.style.height === '') viewport.style.height = '100%';
     viewport.style.overflow = 'hidden';
     viewport.addEventListener('DOMMouseScroll', function (e) {
       self[handleMouseWheel](e);
@@ -97,7 +97,7 @@ var Scroll = function () {
     self[wrapper] = self[doc].createElement('div');
     self[wrapper].classList.add(classNamePrefix + '-wrapper');
     self[wrapper].style.position = 'relative';
-    self[wrapper].style.top = '0';
+    self[wrapper].style.top = '0px';
 
     var d = String(self[option].aniDuration);
     var duration = d.match(/^\d+s$/) ? d : d.match(/^\d+$/) ? d + 's' : '1s';
@@ -134,7 +134,8 @@ var Scroll = function () {
 
       self[option].slides = insert(self[option].slides, index, el);
       if (index <= self[currentSlide]) {
-        self[wrapper].style.top = -self._prevSlidesHeight(++self[currentSlide]);
+        var top = self._prevSlidesHeight(++self[currentSlide]);
+        self[wrapper].style.top = -top + 'px';
       }
 
       if (self[option].paginator !== 'none') {
@@ -145,6 +146,8 @@ var Scroll = function () {
   }, {
     key: 'remove',
     value: function remove(index) {
+      if (index >= this[option].slides.length - 1) return;
+
       if (index === this[currentSlide]) {
         if (index === this[option].slides.length - 1) this.scrollTo(0);
       }
@@ -174,11 +177,12 @@ var Scroll = function () {
       var nextSlide = self._isLastSlide() ? 0 : self[currentSlide] + 1;
       var multiPages = self._isSlideMutiPages(self[currentSlide]);
       var top = strToNum(self[wrapper].style.top);
-      var newTopDiff = !multiPages ? slides[self[currentSlide]].clientHeight : slides[self[currentSlide]].getAttribute('full') === 'true' ? self[option].viewport.clientHeight : slides[self[currentSlide]].clientHeight - self[scrollInSlide];
+      var newTopDiff = !multiPages ? slides[self[currentSlide]].clientHeight : slides[self[currentSlide]].clientHeight - self[scrollInSlide] > self[option].viewport.clientHeight ? self[option].viewport.clientHeight : slides[self[currentSlide]].clientHeight - self[scrollInSlide];
 
-      self[wrapper].style.top = self._isLastSlide() ? 0 : top - newTopDiff;
+      var canMultiScrollToNext = multiPages && self[scrollInSlide] + newTopDiff === slides[self[currentSlide]].clientHeight;
+      self[wrapper].style.top = self._isLastSlide() && !multiPages || self._isLastSlide() && canMultiScrollToNext ? '0px' : top - newTopDiff + 'px';
 
-      if (!multiPages || multiPages && self[scrollInSlide] + newTopDiff === slides[self[currentSlide]].clientHeight) {
+      if (!multiPages || canMultiScrollToNext) {
         self._changePaginator(self[currentSlide], nextSlide);
         self[currentSlide] = nextSlide;
         if (self[scrollInSlide] !== 0) self[scrollInSlide] = 0;
@@ -194,8 +198,8 @@ var Scroll = function () {
       var length = this[option].slides.length - 1;
       if (index < 0) index = length;else if (index > length) index = 0;
       var top = index === 0 ? 0 : this._prevSlidesHeight(index);
-      this[wrapper].style.top = -top;
-      if (this[option].paginator !== 'none' && this[currentSlide] !== index) this._changePaginator(this[currentSlide], index);
+      this[wrapper].style.top = -top + 'px';
+      if (this[currentSlide] !== index) this._changePaginator(this[currentSlide], index);
       this[currentSlide] = index;
       if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
     }
@@ -210,7 +214,7 @@ var Scroll = function () {
       var lastSlide = self._isFirstSlide() ? slides.length - 1 : self[currentSlide] - 1;
       var multiPages = self._isSlideMutiPages(self[currentSlide]);
       var top = strToNum(self[wrapper].style.top);
-      self[wrapper].style.top = self._isFirstSlide() ? slides[slides.length - 1].clientHeight - self[wrapper].clientHeight : self[scrollInSlide] === 0 ? top + slides[lastSlide].clientHeight : top + self[scrollInSlide];
+      self[wrapper].style.top = self._isFirstSlide() ? slides[slides.length - 1].clientHeight - self[wrapper].clientHeight + 'px' : self[scrollInSlide] === 0 ? top + slides[lastSlide].clientHeight + 'px' : top + self[scrollInSlide] + 'px';
 
       if (self[scrollInSlide] === 0) {
         self._changePaginator(self[currentSlide], lastSlide);
@@ -227,7 +231,7 @@ var Scroll = function () {
         el.style.height = '';
       } else {
         el.setAttribute('full', 'true');
-        el.style.height = this[option].viewport.clientHeight;
+        el.style.height = this[option].viewport.clientHeight + 'px';
       }
     }
 
@@ -237,10 +241,11 @@ var Scroll = function () {
     key: '_changePaginator',
     value: function _changePaginator(oldDot, newDot) {
       var self = this;
+      if (self[option].paginator === 'none') return;
       self[dotList].forEach(function (d, i, arr) {
         if (newDot === i) {
           d.classList.add(classNamePrefix + '-paginator-dot-active');
-          d.style.background = self[option].dotActiveCOlor;
+          d.style.background = self[option].dotActiveColor;
         } else if (oldDot === i) {
           d.classList.remove(classNamePrefix + '-paginator-dot-active');
           d.style.background = self[option].dotColor;
@@ -292,7 +297,7 @@ var Scroll = function () {
 
       if (index === this[currentSlide]) {
         dot.classList.add(classNamePrefix + '-paginator-dot-active');
-        dot.style.background = this[option].dotActiveCOlor;
+        dot.style.background = this[option].dotActiveColor;
       }
 
       dot.addEventListener('click', function (e) {
@@ -320,7 +325,7 @@ var Scroll = function () {
       var p = this[paginator];
       p.classList.add(classNamePrefix + '-paginator');
       p.style.position = 'absolute';
-      p.style[pos] = this[wrapper].clientWidth * 0.05;
+      p.style[pos] = this[wrapper].clientWidth * 0.05 + 'px';
 
       this._initDotList();
 
@@ -331,7 +336,8 @@ var Scroll = function () {
   }, {
     key: '_initPaginatorTop',
     value: function _initPaginatorTop() {
-      this[paginator].style.marginTop = -this[paginator].clientHeight / 2;
+      var top = this[paginator].clientHeight / 2;
+      this[paginator].style.marginTop = -top + 'px';
     }
   }, {
     key: '_initSlide',
@@ -339,9 +345,11 @@ var Scroll = function () {
       var i = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
       el.classList.add(classNamePrefix + '-slide');
+      el.style.overflow = 'hidden';
       if (el.getAttribute('full') === 'true') {
         var originHeight = el.clientHeight;
-        el.style.height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+        var height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+        el.style.height = height + 'px';
       }
       moveEl(el, this[wrapper], i);
     }

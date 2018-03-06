@@ -26,7 +26,7 @@ class Scroll {
     self[option] = {
       aniDuration: `${defaultAniDuration}ms`,
       dotColor: '#e1e1e1',
-      dotActiveCOlor: '#6687ff',
+      dotActiveColor: '#6687ff',
       idleTime: 200,
       loop: true,
       keyboard: true,
@@ -66,7 +66,8 @@ class Scroll {
     }
     viewport.classList.add(`${classNamePrefix}-viewport`);
     viewport.style.position = 'relative';
-    viewport.style.height = '100%';
+    if (viewport.style.height === '')
+      viewport.style.height = '100%';
     viewport.style.overflow = 'hidden';
     viewport.addEventListener('DOMMouseScroll', (e) => {
       self[handleMouseWheel](e);
@@ -86,7 +87,7 @@ class Scroll {
     self[wrapper] = self[doc].createElement('div');
     self[wrapper].classList.add(`${classNamePrefix}-wrapper`);
     self[wrapper].style.position = 'relative';
-    self[wrapper].style.top = '0';
+    self[wrapper].style.top = '0px';
 
     const d = String(self[option].aniDuration);
     const duration = d.match(/^\d+s$/) ?
@@ -124,7 +125,8 @@ class Scroll {
 
     self[option].slides = insert(self[option].slides, index, el);
     if (index <= self[currentSlide]) {
-      self[wrapper].style.top = -self._prevSlidesHeight(++self[currentSlide]);
+      const top = self._prevSlidesHeight(++self[currentSlide]);
+      self[wrapper].style.top = `${-top}px`;
     }
 
     if (self[option].paginator !== 'none') {
@@ -135,6 +137,8 @@ class Scroll {
   }
 
   remove (index) {
+    if (index >= this[option].slides.length - 1) return;
+    
     if (index === this[currentSlide]) {
       if (index === this[option].slides.length - 1)
         this.scrollTo(0);
@@ -167,15 +171,17 @@ class Scroll {
     const top = strToNum(self[wrapper].style.top);
     const newTopDiff = !multiPages ?
       slides[self[currentSlide]].clientHeight :
-      (slides[self[currentSlide]].getAttribute('full') === 'true' ?
+      (slides[self[currentSlide]].clientHeight - self[scrollInSlide] > self[option].viewport.clientHeight ?
       self[option].viewport.clientHeight :
       slides[self[currentSlide]].clientHeight - self[scrollInSlide]);
 
+    const canMultiScrollToNext = multiPages && self[scrollInSlide] + newTopDiff === slides[self[currentSlide]].clientHeight;
     self[wrapper].style.top =
-      self._isLastSlide() ?
-      0 : top - newTopDiff;
+      ((self._isLastSlide() && !multiPages) ||
+      (self._isLastSlide() && canMultiScrollToNext)) ?
+      '0px' : `${top - newTopDiff}px`;
 
-    if (!multiPages || (multiPages && self[scrollInSlide] + newTopDiff === slides[self[currentSlide]].clientHeight)) {
+    if (!multiPages || canMultiScrollToNext) {
       self._changePaginator(self[currentSlide], nextSlide);
       self[currentSlide] = nextSlide;
       if (self[scrollInSlide] !== 0) self[scrollInSlide] = 0;
@@ -189,8 +195,8 @@ class Scroll {
     if (index < 0) index = length;
     else if (index > length) index = 0;
     const top = index === 0 ? 0 : this._prevSlidesHeight(index);
-    this[wrapper].style.top = -top;
-    if (this[option].paginator !== 'none' && this[currentSlide] !== index)
+    this[wrapper].style.top = `${-top}px`;
+    if (this[currentSlide] !== index)
       this._changePaginator(this[currentSlide], index);
     this[currentSlide] = index;
     if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
@@ -209,10 +215,10 @@ class Scroll {
     const top = strToNum(self[wrapper].style.top);
     self[wrapper].style.top =
       self._isFirstSlide() ?
-      slides[slides.length - 1].clientHeight - self[wrapper].clientHeight :
+      `${slides[slides.length - 1].clientHeight - self[wrapper].clientHeight}px` :
       (self[scrollInSlide] === 0 ?
-      top + slides[lastSlide].clientHeight :
-      top + self[scrollInSlide]);
+      `${top + slides[lastSlide].clientHeight}px` :
+      `${top + self[scrollInSlide]}px`);
 
     if (self[scrollInSlide] === 0) {
       self._changePaginator(self[currentSlide], lastSlide);
@@ -228,17 +234,18 @@ class Scroll {
       el.style.height = '';
     } else {
       el.setAttribute('full', 'true');
-      el.style.height = this[option].viewport.clientHeight;
+      el.style.height = `${this[option].viewport.clientHeight}px`;
     }
   }
 
   // PRIVATE
   _changePaginator (oldDot, newDot) {
     const self = this;
+    if (self[option].paginator === 'none') return;
     self[dotList].forEach((d, i, arr) => {
       if (newDot === i) {
         d.classList.add(`${classNamePrefix}-paginator-dot-active`);
-        d.style.background = self[option].dotActiveCOlor;
+        d.style.background = self[option].dotActiveColor;
       } else if (oldDot === i) {
         d.classList.remove(`${classNamePrefix}-paginator-dot-active`);
         d.style.background = self[option].dotColor;
@@ -279,7 +286,7 @@ class Scroll {
 
     if (index === this[currentSlide]) {
       dot.classList.add(`${classNamePrefix}-paginator-dot-active`);
-      dot.style.background = this[option].dotActiveCOlor;
+      dot.style.background = this[option].dotActiveColor;
     }
 
     dot.addEventListener('click', (e) => {
@@ -301,7 +308,7 @@ class Scroll {
     const p = this[paginator];
     p.classList.add(`${classNamePrefix}-paginator`);
     p.style.position = 'absolute';
-    p.style[pos] = this[wrapper].clientWidth * 0.05;
+    p.style[pos] = `${this[wrapper].clientWidth * 0.05}px`;
 
     this._initDotList();
 
@@ -311,14 +318,17 @@ class Scroll {
   }
 
   _initPaginatorTop () {
-    this[paginator].style.marginTop = -this[paginator].clientHeight / 2;
+    const top = this[paginator].clientHeight / 2;
+    this[paginator].style.marginTop = `${-top}px`;
   }
 
   _initSlide (el, i = null) {
     el.classList.add(`${classNamePrefix}-slide`);
+    el.style.overflow = 'hidden';
     if (el.getAttribute('full') === 'true') {
       const originHeight = el.clientHeight;
-      el.style.height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+      const height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+      el.style.height = `${height}px`;
     }
     moveEl(el, this[wrapper], i);
   }
