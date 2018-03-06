@@ -8,7 +8,7 @@ Flexible and pure-js scrollable slides maker.
 
 # Features
 * No other requirements like jquery.
-* Not only a onepage-scoll library.
+* Can make onepage-scroll and also section-scroll.
 * Add or remove slides programatically.
 * Both scrolling and swiping are supported.
 * Keyboard supported.
