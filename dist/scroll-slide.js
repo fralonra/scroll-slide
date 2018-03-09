@@ -48,14 +48,14 @@ var Scroll = function () {
     };
     self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
-    self[doc] = null;
+    self[doc] = global.document;
     self[dotList] = null;
     self[isTouching] = false;
     self[lastAniTime] = 0;
     self[paginator] = null;
     self[scrollInSlide] = 0;
     self[touchStartY] = 0;
-    self[win] = null;
+    self[win] = global;
     self[wrapper] = null;
 
     Object.keys(opt).forEach(function (k) {
@@ -67,9 +67,6 @@ var Scroll = function () {
     slides.forEach(function (s) {
       if (s instanceof Element) {} else throw Error('section must be an instance of Element');
     });
-
-    self[doc] = slides[0].ownerDocument;
-    self[win] = self[doc].defaultView;
 
     var viewport = self[option].viewport;
     if (viewport === null) {
