@@ -32,7 +32,8 @@ class Scroll {
       keyboard: true,
       paginator: 'none',
       slides: [],
-      viewport: null
+      viewport: null,
+      onScroll: null
     };
     self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
@@ -354,6 +355,13 @@ class Scroll {
       heights += s.clientHeight;
     });
     return heights;
+  }
+
+  _setCurrentSlide (val) {
+    this[currentSlide] = val;
+    if (typeof this[options].onScroll === 'function') {
+      this[option].onScroll(this[currentSlide]);
+    }
   }
 
   [handleDotClick] (e) {
