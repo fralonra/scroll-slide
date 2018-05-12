@@ -41,7 +41,10 @@ or
 const s = scroll({
   viewport: document.getElementById('viewport'),
   slides: document.querySelectorAll('#viewport section'),
-  paginator: 'right'
+  paginator: 'right',
+  onScoll (i) {
+    alert(`This is slide ${i + 1}`);
+  }
 });
 ```
 
@@ -96,4 +99,4 @@ Toggle full mode of an element.
 | paginator | If 'none', there will be no paginator. If 'right'/'left', the paginator will be shown on the right/left of the viewport. | String | 'none' |
 | slides | The elements to be shown as slides in the viewport. | Array | [] |
 | viewport | The wrapper element for all slides. If you need to create a onepage-scroll website, just set viewport to fit the screen size. | Element | null |
-| onScroll | The callback function when reaches a new slide. The index of current sldie will be passed. | Function | null |
+| onScroll | The callback function when reaches a new slide. The index of current slide will be passed. | Function | null |

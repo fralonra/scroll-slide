@@ -181,7 +181,7 @@ class Scroll {
 
     if (!multiPages || canMultiScrollToNext) {
       self._changePaginator(self[currentSlide], nextSlide);
-      self[currentSlide] = nextSlide;
+      self._setCurrentSlide(nextSlide);
       if (self[scrollInSlide] !== 0) self[scrollInSlide] = 0;
     } else if (multiPages) {
       self[scrollInSlide] += newTopDiff;
@@ -196,7 +196,7 @@ class Scroll {
     this[wrapper].style.top = `${-top}px`;
     if (this[currentSlide] !== index)
       this._changePaginator(this[currentSlide], index);
-    this[currentSlide] = index;
+    this._setCurrentSlide(index);
     if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
   }
 
@@ -220,7 +220,7 @@ class Scroll {
 
     if (self[scrollInSlide] === 0) {
       self._changePaginator(self[currentSlide], lastSlide);
-      self[currentSlide] = lastSlide;
+      self._setCurrentSlide(lastSlide);
     } else {
       self[scrollInSlide] = 0;
     }
@@ -359,7 +359,7 @@ class Scroll {
 
   _setCurrentSlide (val) {
     this[currentSlide] = val;
-    if (typeof this[options].onScroll === 'function') {
+    if (typeof this[option].onScroll === 'function') {
       this[option].onScroll(this[currentSlide]);
     }
   }

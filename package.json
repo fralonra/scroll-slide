@@ -1,6 +1,6 @@
 {
   "name": "scroll-slide",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Flexible and pure-js scrollable slides maker.",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "homepage": "https://github.com/fralonra/scroll-slide#readme",
   "dependencies": {},
   "devDependencies": {
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-preset-es2015": "^6.24.1",
     "babelify": "^8.0.0",
     "gulp": "^3.9.1",
