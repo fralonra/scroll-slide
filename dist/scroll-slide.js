@@ -24,7 +24,7 @@ var touchStartY = Symbol('touchStartY');
 var win = Symbol('win');
 var wrapper = Symbol('wrapper');
 
-var defaultAniDuration = 1000;
+var defaultAniDuration = 1;
 var classNamePrefix = 'scroll-slide';
 
 var Scroll = function () {
@@ -36,7 +36,7 @@ var Scroll = function () {
     var self = this;
 
     self[option] = {
-      aniDuration: defaultAniDuration + 'ms',
+      aniDuration: defaultAniDuration + 's',
       dotColor: '#e1e1e1',
       dotActiveColor: '#6687ff',
       idleTime: 200,
@@ -98,7 +98,7 @@ var Scroll = function () {
     self[wrapper].style.top = '0px';
 
     var d = String(self[option].aniDuration);
-    var duration = d.match(/^\d+s$/) ? d : d.match(/^\d+$/) ? d + 's' : '1s';
+    var duration = d.match(/^(0\.)?\d+m?s$/) ? d : d.match(/^(0\.)?\d+$/) ? d + 's' : '1s';
     self[wrapper].style.transition = 'all ' + duration + ' ease 0s';
     self[aniDuration] = timeToMsNum(d);
 
@@ -509,7 +509,7 @@ function strToNum(str) {
 }
 
 function timeToMsNum(time) {
-  return time.match(/^\d+ms$/) ? Number(time.split('ms')[0]) : time.match(/^\d+s$/) ? Number(time.split('s')[0]) * 1000 : defaultAniDuration;
+  return time.match(/^(0\.)?\d+ms$/) ? Number(time.split('ms')[0]) : time.match(/^(0\.)?\d+s$/) ? Number(time.split('s')[0]) * 1000 : time.match(/^(0\.)?\d+$/) ? time * 1000 : defaultAniDuration * 1000;
 }
 
 // GLOBAL

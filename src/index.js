@@ -16,7 +16,7 @@ const touchStartY = Symbol('touchStartY');
 const win = Symbol('win');
 const wrapper = Symbol('wrapper');
 
-const defaultAniDuration = 1000;
+const defaultAniDuration = 1;
 const classNamePrefix = 'scroll-slide';
 
 class Scroll {
@@ -24,7 +24,7 @@ class Scroll {
     const self = this;
 
     self[option] = {
-      aniDuration: `${defaultAniDuration}ms`,
+      aniDuration: `${defaultAniDuration}s`,
       dotColor: '#e1e1e1',
       dotActiveColor: '#6687ff',
       idleTime: 200,
@@ -88,9 +88,9 @@ class Scroll {
     self[wrapper].style.top = '0px';
 
     const d = String(self[option].aniDuration);
-    const duration = d.match(/^\d+s$/) ?
+    const duration = d.match(/^(0\.)?\d+m?s$/) ?
       d :
-      d.match(/^\d+$/) ?
+      d.match(/^(0\.)?\d+$/) ?
       `${d}s` :
       '1s';
     self[wrapper].style.transition = `all ${duration} ease 0s`;
@@ -473,11 +473,13 @@ function strToNum (str) {
 }
 
 function timeToMsNum (time) {
-  return time.match(/^\d+ms$/) ?
+  return time.match(/^(0\.)?\d+ms$/) ?
     Number(time.split('ms')[0]) :
-    time.match(/^\d+s$/) ?
+    time.match(/^(0\.)?\d+s$/) ?
     Number(time.split('s')[0]) * 1000 :
-    defaultAniDuration;
+    time.match(/^(0\.)?\d+$/) ?
+    time * 1000 :
+    defaultAniDuration * 1000;
 }
 
 // GLOBAL
