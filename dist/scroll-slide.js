@@ -405,8 +405,6 @@ var Scroll = function () {
   }, {
     key: handleKeyboard,
     value: function value(e) {
-      e.preventDefault();
-
       switch (e.key) {
         case 'ArrowDown':
         case 'PageDown':

@@ -374,8 +374,6 @@ class Scroll {
   }
 
   [handleKeyboard] (e) {
-    e.preventDefault();
-
     switch(e.key) {
       case 'ArrowDown':
       case 'PageDown':

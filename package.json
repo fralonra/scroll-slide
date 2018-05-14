@@ -1,6 +1,6 @@
 {
   "name": "scroll-slide",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Flexible and pure-js scrollable slides maker.",
   "main": "index.js",
   "scripts": {
