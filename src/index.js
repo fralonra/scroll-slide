@@ -134,6 +134,10 @@ class Scroll {
     }
   }
 
+  current () {
+    return this[currentSlide];
+  }
+
   remove (index) {
     if (index >= this[option].slides.length - 1) return;
 
@@ -302,6 +306,12 @@ class Scroll {
     });
   }
 
+  _initFullHeight (el) {
+    const originHeight = el.clientHeight;
+    const height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+    el.style.height = `${height}px`;
+  }
+
   _initPaginator (pos = this[option].paginator) {
     const p = this[paginator];
     p.classList.add(`${classNamePrefix}-paginator`);
@@ -324,9 +334,7 @@ class Scroll {
     el.classList.add(`${classNamePrefix}-slide`);
     el.style.overflow = 'hidden';
     if (el.getAttribute('full') === 'true') {
-      const originHeight = el.clientHeight;
-      const height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
-      el.style.height = `${height}px`;
+      this._initFullHeight(el);
     }
     moveEl(el, this[wrapper], i);
   }

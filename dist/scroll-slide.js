@@ -142,6 +142,11 @@ var Scroll = function () {
       }
     }
   }, {
+    key: 'current',
+    value: function current() {
+      return this[currentSlide];
+    }
+  }, {
     key: 'remove',
     value: function remove(index) {
       if (index >= this[option].slides.length - 1) return;
@@ -316,6 +321,13 @@ var Scroll = function () {
       });
     }
   }, {
+    key: '_initFullHeight',
+    value: function _initFullHeight(el) {
+      var originHeight = el.clientHeight;
+      var height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
+      el.style.height = height + 'px';
+    }
+  }, {
     key: '_initPaginator',
     value: function _initPaginator() {
       var pos = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this[option].paginator;
@@ -345,9 +357,7 @@ var Scroll = function () {
       el.classList.add(classNamePrefix + '-slide');
       el.style.overflow = 'hidden';
       if (el.getAttribute('full') === 'true') {
-        var originHeight = el.clientHeight;
-        var height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
-        el.style.height = height + 'px';
+        this._initFullHeight(el);
       }
       moveEl(el, this[wrapper], i);
     }

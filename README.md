@@ -69,22 +69,25 @@ You can create slide which fills the entire viewport regardless of its original 
 More for `option`, see [below](#options).
 
 ### add(el, index)
-Add new element to viewport at position `index`. Push to the end by default.
+Adds new element to viewport at position `index`. Push to the end by default.
+
+### current()
+Returns the index of current slide. Starts from 0.
 
 ### remove(index)
-Remove the element at position `index` in the viewport.
+Removes the element at position `index` in the viewport.
 
 ### scrollDown()
-Move the slide down by one. The same as scrolling down/swiping down.
+Moves the slide down by one. The same as scrolling down/swiping down.
 
 ### scrollTo(index = 0)
-Move to the slide at position `index`. Move to the first slide by default.
+Moves to the slide at position `index`. Moves to the first slide by default.
 
 ### scrollUp()
-Move the slide up by one. The same as scrolling up/swiping up.
+Moves the slide up by one. The same as scrolling up/swiping up.
 
 ### toggleFull(el)
-Toggle full mode of an element.
+Toggles full mode of an element.
 
 ## Options
 
