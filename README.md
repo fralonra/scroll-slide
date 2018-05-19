@@ -93,7 +93,7 @@ Toggles full mode of an element.
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| aniDuration | How long the scolling animation will last. Examples: '0.1s', '100ms' or `0.1`. | String | '1000ms' |
+| duration | How long the scolling animation will last in milliseconds. | Number | 1000 |
 | dotColor | The color for paginator dots. | String | '#e1e1e1' |
 | dotActiveColor | The color for paginator dot which is currently actived. | String | '#6687ff' |
 | idleTime | How long the browser won't respond to the scrolling action after last scrolling in millseconds. | Number | 200 |

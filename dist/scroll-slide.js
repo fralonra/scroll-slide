@@ -6,10 +6,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var aniDuration = Symbol('aniDuration');
 var currentSlide = Symbol('currentSlide');
 var doc = Symbol('doc');
 var dotList = Symbol('dotList');
+var duration = Symbol('duration');
 var handleDotClick = Symbol('handleDotClick');
 var handleKeyboard = Symbol('handleKeyboard');
 var handleMouseWheel = Symbol('handleMouseWheel');
@@ -24,7 +24,6 @@ var touchStartY = Symbol('touchStartY');
 var win = Symbol('win');
 var wrapper = Symbol('wrapper');
 
-var defaultAniDuration = 1;
 var classNamePrefix = 'scroll-slide';
 
 var Scroll = function () {
@@ -35,8 +34,8 @@ var Scroll = function () {
 
     var self = this;
 
-    self[option] = {
-      aniDuration: defaultAniDuration + 's',
+    var defaultOpt = {
+      duration: 1000,
       dotColor: '#e1e1e1',
       dotActiveColor: '#6687ff',
       idleTime: 200,
@@ -47,7 +46,6 @@ var Scroll = function () {
       viewport: null,
       onScroll: null
     };
-    self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
     self[doc] = global.document;
     self[dotList] = null;
@@ -59,9 +57,8 @@ var Scroll = function () {
     self[win] = global;
     self[wrapper] = null;
 
-    Object.keys(opt).forEach(function (k) {
-      self[option][k] = opt[k];
-    });
+    self[option] = Object.assign(defaultOpt, opt);
+    self[duration] = self[option].duration;
 
     self[option].slides = Array.from(self[option].slides);
     var slides = self[option].slides;
@@ -97,10 +94,9 @@ var Scroll = function () {
     self[wrapper].style.position = 'relative';
     self[wrapper].style.top = '0px';
 
-    var d = String(self[option].aniDuration);
-    var duration = d.match(/^(0\.)?\d+m?s$/) ? d : d.match(/^(0\.)?\d+$/) ? d + 's' : '1s';
-    self[wrapper].style.transition = 'all ' + duration + ' ease 0s';
-    self[aniDuration] = timeToMsNum(d);
+    var d = String(self[duration]);
+    var durationText = d.match(/^\d+$/) ? d + 'ms' : defaultDuration;
+    self[wrapper].style.transition = 'all ' + durationText + ' ease 0s';
 
     slides.forEach(function (s) {
       self._initSlide(s);
@@ -435,7 +431,7 @@ var Scroll = function () {
 
       var self = this;
       var now = new Date().getTime();
-      if (now - self[lastAniTime] < self[option].idleTime + self[aniDuration]) return;
+      if (now - self[lastAniTime] < self[option].idleTime + self[duration]) return;
 
       var delta = e.wheelDelta || -e.detail;
       if (delta < 0) {
@@ -455,7 +451,7 @@ var Scroll = function () {
       if (!self[isTouching]) return;
 
       var now = new Date().getTime();
-      if (now - self[lastAniTime] < self[option].idleTime + self[aniDuration]) return;
+      if (now - self[lastAniTime] < self[option].idleTime + self[duration]) return;
 
       if (e.touches && e.touches.length) {
         var delta = self[touchStartY] - e.touches[0].pageY;
@@ -514,10 +510,6 @@ function moveEl(el, to) {
 
 function strToNum(str) {
   return Number(str.split(/[^\d-]+/)[0]);
-}
-
-function timeToMsNum(time) {
-  return time.match(/^(0\.)?\d+ms$/) ? Number(time.split('ms')[0]) : time.match(/^(0\.)?\d+s$/) ? Number(time.split('s')[0]) * 1000 : time.match(/^(0\.)?\d+$/) ? time * 1000 : defaultAniDuration * 1000;
 }
 
 // GLOBAL

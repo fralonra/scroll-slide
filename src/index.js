@@ -1,7 +1,7 @@
-const aniDuration = Symbol('aniDuration');
 const currentSlide = Symbol('currentSlide');
 const doc = Symbol('doc');
 const dotList = Symbol('dotList');
+const duration = Symbol('duration');
 const handleDotClick = Symbol('handleDotClick');
 const handleKeyboard = Symbol('handleKeyboard');
 const handleMouseWheel = Symbol('handleMouseWheel');
@@ -16,15 +16,14 @@ const touchStartY = Symbol('touchStartY');
 const win = Symbol('win');
 const wrapper = Symbol('wrapper');
 
-const defaultAniDuration = 1;
 const classNamePrefix = 'scroll-slide';
 
 class Scroll {
   constructor (opt = {}) {
     const self = this;
 
-    self[option] = {
-      aniDuration: `${defaultAniDuration}s`,
+    const defaultOpt = {
+      duration: 1000,
       dotColor: '#e1e1e1',
       dotActiveColor: '#6687ff',
       idleTime: 200,
@@ -35,7 +34,6 @@ class Scroll {
       viewport: null,
       onScroll: null
     };
-    self[aniDuration] = defaultAniDuration;
     self[currentSlide] = 0;
     self[doc] = global.document;
     self[dotList] = null;
@@ -46,10 +44,9 @@ class Scroll {
     self[touchStartY] = 0;
     self[win] = global;
     self[wrapper] = null;
-
-    Object.keys(opt).forEach(function (k) {
-      self[option][k] = opt[k];
-    });
+    
+    self[option] = Object.assign(defaultOpt, opt);
+    self[duration] = self[option].duration;
 
     self[option].slides = Array.from(self[option].slides);
     const slides = self[option].slides;
@@ -87,14 +84,11 @@ class Scroll {
     self[wrapper].style.position = 'relative';
     self[wrapper].style.top = '0px';
 
-    const d = String(self[option].aniDuration);
-    const duration = d.match(/^(0\.)?\d+m?s$/) ?
-      d :
-      d.match(/^(0\.)?\d+$/) ?
-      `${d}s` :
-      '1s';
-    self[wrapper].style.transition = `all ${duration} ease 0s`;
-    self[aniDuration] = timeToMsNum(d);
+    const d = String(self[duration]);
+    const durationText = d.match(/^\d+$/) ?
+      `${d}ms` :
+      defaultDuration;
+    self[wrapper].style.transition = `all ${durationText} ease 0s`;
 
     slides.forEach(s => {
       self._initSlide(s);
@@ -401,7 +395,7 @@ class Scroll {
 
     const self = this;
     const now = new Date().getTime();
-    if (now - self[lastAniTime] < self[option].idleTime + self[aniDuration])
+    if (now - self[lastAniTime] < self[option].idleTime + self[duration])
 			return;
 
     const delta = e.wheelDelta || -e.detail;
@@ -421,7 +415,7 @@ class Scroll {
     if (!self[isTouching]) return;
 
     const now = new Date().getTime();
-    if (now - self[lastAniTime] < self[option].idleTime + self[aniDuration])
+    if (now - self[lastAniTime] < self[option].idleTime + self[duration])
       return;
 
     if (e.touches && e.touches.length) {
@@ -476,16 +470,6 @@ function moveEl (el, to, i = null) {
 
 function strToNum (str) {
   return Number(str.split(/[^\d-]+/)[0]);
-}
-
-function timeToMsNum (time) {
-  return time.match(/^(0\.)?\d+ms$/) ?
-    Number(time.split('ms')[0]) :
-    time.match(/^(0\.)?\d+s$/) ?
-    Number(time.split('s')[0]) * 1000 :
-    time.match(/^(0\.)?\d+$/) ?
-    time * 1000 :
-    defaultAniDuration * 1000;
 }
 
 // GLOBAL
