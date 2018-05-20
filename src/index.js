@@ -17,6 +17,7 @@ const touchStartY = Symbol('touchStartY');
 const win = Symbol('win');
 const wrapper = Symbol('wrapper');
 
+const defaultDuration = 1000;
 const classNamePrefix = 'scroll-slide';
 
 class Scroll {
@@ -114,7 +115,9 @@ class Scroll {
     this[wrapper].style.top = `${-top}px`;
     if (this[currentSlide] !== index)
       this._changePaginator(this[currentSlide], index);
-    this._setCurrentSlide(index);
+
+    const callback = index === this[currentSlide] ? false : true;
+    this._setCurrentSlide(index, callback);
     if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
   }
 
@@ -191,7 +194,7 @@ class Scroll {
   _initOption (opt = {}) {
     const defaultOpt = {
       autoHeight: true,
-      duration: 1000,
+      duration: defaultDuration,
       dotColor: '#e1e1e1',
       dotActiveColor: '#6687ff',
       idleTime: 200,
@@ -250,9 +253,7 @@ class Scroll {
   }
 
   _initFullHeight (el) {
-    const originHeight = el.clientHeight;
-    const height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
-    el.style.height = `${height}px`;
+    el.style.height = `${this[option].viewport.clientHeight}px`;
   }
 
   _initGlobalEvent () {
@@ -261,7 +262,12 @@ class Scroll {
     if (self[option].autoHeight) {
       window.addEventListener('resize', (e) => {
         self[handleResize](e);
+
+        self[wrapper].style.transitionDuration = '0s';
         self.scrollTo(self[currentSlide]);
+        setTimeout(() => {
+          self[wrapper].style.transitionDuration = genDurationText(String(self[duration]));
+        }, 1);
       });
     }
 
@@ -355,10 +361,7 @@ class Scroll {
     self[wrapper].style.position = 'relative';
     self[wrapper].style.top = '0px';
 
-    const d = String(self[duration]);
-    const durationText = d.match(/^\d+$/) ?
-      `${d}ms` :
-      defaultDuration;
+    const durationText = genDurationText(String(self[duration]));
     self[wrapper].style.transition = `all ${durationText} ease 0s`;
 
     self._initSlides();
@@ -384,9 +387,9 @@ class Scroll {
     return heights;
   }
 
-  _setCurrentSlide (val) {
+  _setCurrentSlide (val, callback = true) {
     this[currentSlide] = val;
-    if (typeof this[option].onScroll === 'function') {
+    if (callback && typeof this[option].onScroll === 'function') {
       this[option].onScroll(this[currentSlide]);
     }
   }
@@ -476,6 +479,12 @@ class Scroll {
       });
     }
   }
+}
+
+function genDurationText (duration) {
+  return duration.match(/^\d+$/) ?
+  `${duration}ms` :
+  `${defaultDuration}ms`;
 }
 
 function insert (arr, index, el) {

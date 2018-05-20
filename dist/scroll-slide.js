@@ -25,6 +25,7 @@ var touchStartY = Symbol('touchStartY');
 var win = Symbol('win');
 var wrapper = Symbol('wrapper');
 
+var defaultDuration = 1000;
 var classNamePrefix = 'scroll-slide';
 
 var Scroll = function () {
@@ -126,7 +127,9 @@ var Scroll = function () {
       var top = index === 0 ? 0 : this._prevSlidesHeight(index);
       this[wrapper].style.top = -top + 'px';
       if (this[currentSlide] !== index) this._changePaginator(this[currentSlide], index);
-      this._setCurrentSlide(index);
+
+      var callback = index === this[currentSlide] ? false : true;
+      this._setCurrentSlide(index, callback);
       if (this[scrollInSlide] !== 0) this[scrollInSlide] = 0;
     }
   }, {
@@ -210,7 +213,7 @@ var Scroll = function () {
 
       var defaultOpt = {
         autoHeight: true,
-        duration: 1000,
+        duration: defaultDuration,
         dotColor: '#e1e1e1',
         dotActiveColor: '#6687ff',
         idleTime: 200,
@@ -278,9 +281,7 @@ var Scroll = function () {
   }, {
     key: '_initFullHeight',
     value: function _initFullHeight(el) {
-      var originHeight = el.clientHeight;
-      var height = Math.ceil(originHeight / this[option].viewport.clientHeight) * this[option].viewport.clientHeight;
-      el.style.height = height + 'px';
+      el.style.height = this[option].viewport.clientHeight + 'px';
     }
   }, {
     key: '_initGlobalEvent',
@@ -290,7 +291,12 @@ var Scroll = function () {
       if (self[option].autoHeight) {
         window.addEventListener('resize', function (e) {
           self[handleResize](e);
+
+          self[wrapper].style.transitionDuration = '0s';
           self.scrollTo(self[currentSlide]);
+          setTimeout(function () {
+            self[wrapper].style.transitionDuration = genDurationText(String(self[duration]));
+          }, 1);
         });
       }
 
@@ -397,8 +403,7 @@ var Scroll = function () {
       self[wrapper].style.position = 'relative';
       self[wrapper].style.top = '0px';
 
-      var d = String(self[duration]);
-      var durationText = d.match(/^\d+$/) ? d + 'ms' : defaultDuration;
+      var durationText = genDurationText(String(self[duration]));
       self[wrapper].style.transition = 'all ' + durationText + ' ease 0s';
 
       self._initSlides();
@@ -426,8 +431,10 @@ var Scroll = function () {
   }, {
     key: '_setCurrentSlide',
     value: function _setCurrentSlide(val) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
       this[currentSlide] = val;
-      if (typeof this[option].onScroll === 'function') {
+      if (callback && typeof this[option].onScroll === 'function') {
         this[option].onScroll(this[currentSlide]);
       }
     }
@@ -525,6 +532,10 @@ var Scroll = function () {
 
   return Scroll;
 }();
+
+function genDurationText(duration) {
+  return duration.match(/^\d+$/) ? duration + 'ms' : defaultDuration + 'ms';
+}
 
 function insert(arr, index, el) {
   var newArr = [];
