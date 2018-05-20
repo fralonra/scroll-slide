@@ -13,6 +13,7 @@ var duration = Symbol('duration');
 var handleDotClick = Symbol('handleDotClick');
 var handleKeyboard = Symbol('handleKeyboard');
 var handleMouseWheel = Symbol('handleMouseWheel');
+var handleResize = Symbol('handleResize');
 var handleTouchMove = Symbol('handleTouchMove');
 var handleTouchStart = Symbol('handleTouchStart');
 var isTouching = Symbol('isTouching');
@@ -32,83 +33,9 @@ var Scroll = function () {
 
     _classCallCheck(this, Scroll);
 
-    var self = this;
-
-    var defaultOpt = {
-      duration: 1000,
-      dotColor: '#e1e1e1',
-      dotActiveColor: '#6687ff',
-      idleTime: 200,
-      loop: true,
-      keyboard: true,
-      paginator: 'none',
-      slides: [],
-      viewport: null,
-      onScroll: null
-    };
-    self[currentSlide] = 0;
-    self[doc] = global.document;
-    self[dotList] = null;
-    self[isTouching] = false;
-    self[lastAniTime] = 0;
-    self[paginator] = null;
-    self[scrollInSlide] = 0;
-    self[touchStartY] = 0;
-    self[win] = global;
-    self[wrapper] = null;
-
-    self[option] = Object.assign(defaultOpt, opt);
-    self[duration] = self[option].duration;
-
-    self[option].slides = Array.from(self[option].slides);
-    var slides = self[option].slides;
-    slides.forEach(function (s) {
-      if (s instanceof Element) {} else throw Error('section must be an instance of Element');
-    });
-
-    var viewport = self[option].viewport;
-    if (viewport === null) {
-      viewport = self[doc].getElementByTagName('body')[0];
-    }
-    viewport.classList.add(classNamePrefix + '-viewport');
-    viewport.style.position = 'relative';
-    if (viewport.style.height === '') viewport.style.height = '100%';
-    viewport.style.overflow = 'hidden';
-    viewport.addEventListener('DOMMouseScroll', function (e) {
-      self[handleMouseWheel](e);
-    });
-    viewport.addEventListener('mousewheel', function (e) {
-      self[handleMouseWheel](e);
-    });
-    viewport.addEventListener('touchstart', function (e) {
-      self[handleTouchStart](e);
-    });
-    if (self[option].keyboard) {
-      self[doc].addEventListener('keydown', function (e) {
-        self[handleKeyboard](e);
-      });
-    }
-
-    self[wrapper] = self[doc].createElement('div');
-    self[wrapper].classList.add(classNamePrefix + '-wrapper');
-    self[wrapper].style.position = 'relative';
-    self[wrapper].style.top = '0px';
-
-    var d = String(self[duration]);
-    var durationText = d.match(/^\d+$/) ? d + 'ms' : defaultDuration;
-    self[wrapper].style.transition = 'all ' + durationText + ' ease 0s';
-
-    slides.forEach(function (s) {
-      self._initSlide(s);
-    });
-    moveEl(self[wrapper], viewport);
-
-    if (self[option].paginator !== 'none' && self[option].paginator !== 'left' && self[option].paginator !== 'right') self[option].paginator = 'none';
-    if (self[option].paginator !== 'none') {
-      viewport.style.position = 'relative';
-      self[paginator] = this[doc].createElement('div');
-      self._initPaginator();
-    }
+    this._initOption(opt);
+    this._initView();
+    this._initGlobalEvent();
   }
 
   // PUBLIC
@@ -277,6 +204,38 @@ var Scroll = function () {
       this._initPaginatorTop();
     }
   }, {
+    key: '_initOption',
+    value: function _initOption() {
+      var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      var defaultOpt = {
+        autoHeight: true,
+        duration: 1000,
+        dotColor: '#e1e1e1',
+        dotActiveColor: '#6687ff',
+        idleTime: 200,
+        loop: true,
+        keyboard: true,
+        paginator: 'none',
+        slides: [],
+        viewport: null,
+        onScroll: null
+      };
+      this[currentSlide] = 0;
+      this[doc] = global.document;
+      this[dotList] = null;
+      this[isTouching] = false;
+      this[lastAniTime] = 0;
+      this[paginator] = null;
+      this[scrollInSlide] = 0;
+      this[touchStartY] = 0;
+      this[win] = global;
+      this[wrapper] = null;
+
+      this[option] = Object.assign(defaultOpt, opt);
+      this[duration] = this[option].duration;
+    }
+  }, {
     key: '_initDot',
     value: function _initDot() {
       var _this = this;
@@ -324,6 +283,24 @@ var Scroll = function () {
       el.style.height = height + 'px';
     }
   }, {
+    key: '_initGlobalEvent',
+    value: function _initGlobalEvent() {
+      var self = this;
+
+      if (self[option].autoHeight) {
+        window.addEventListener('resize', function (e) {
+          self[handleResize](e);
+          self.scrollTo(self[currentSlide]);
+        });
+      }
+
+      if (self[option].keyboard) {
+        self[doc].addEventListener('keydown', function (e) {
+          self[handleKeyboard](e);
+        });
+      }
+    }
+  }, {
     key: '_initPaginator',
     value: function _initPaginator() {
       var pos = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this[option].paginator;
@@ -358,6 +335,21 @@ var Scroll = function () {
       moveEl(el, this[wrapper], i);
     }
   }, {
+    key: '_initSlides',
+    value: function _initSlides() {
+      var _this3 = this;
+
+      this[option].slides = Array.from(this[option].slides);
+      var slides = this[option].slides;
+      slides.forEach(function (s) {
+        if (s instanceof Element) {} else throw Error('section must be an instance of Element');
+      });
+      slides.forEach(function (s) {
+        _this3._initSlide(s);
+      });
+      moveEl(this[wrapper], this[option].viewport);
+    }
+  }, {
     key: '_isFirstSlide',
     value: function _isFirstSlide() {
       return this[currentSlide] === 0;
@@ -376,6 +368,47 @@ var Scroll = function () {
     key: '_isSlideMutiPages',
     value: function _isSlideMutiPages(i) {
       return this[option].slides[i].clientHeight > this[option].viewport.clientHeight;
+    }
+  }, {
+    key: '_initView',
+    value: function _initView() {
+      var self = this;
+
+      var viewport = self[option].viewport;
+      if (viewport === null) {
+        viewport = self[doc].getElementByTagName('body')[0];
+      }
+      viewport.classList.add(classNamePrefix + '-viewport');
+      viewport.style.position = 'relative';
+      if (viewport.style.height === '') viewport.style.height = '100%';
+      viewport.style.overflow = 'hidden';
+      viewport.addEventListener('DOMMouseScroll', function (e) {
+        self[handleMouseWheel](e);
+      });
+      viewport.addEventListener('mousewheel', function (e) {
+        self[handleMouseWheel](e);
+      });
+      viewport.addEventListener('touchstart', function (e) {
+        self[handleTouchStart](e);
+      });
+
+      self[wrapper] = self[doc].createElement('div');
+      self[wrapper].classList.add(classNamePrefix + '-wrapper');
+      self[wrapper].style.position = 'relative';
+      self[wrapper].style.top = '0px';
+
+      var d = String(self[duration]);
+      var durationText = d.match(/^\d+$/) ? d + 'ms' : defaultDuration;
+      self[wrapper].style.transition = 'all ' + durationText + ' ease 0s';
+
+      self._initSlides();
+
+      if (self[option].paginator !== 'none' && self[option].paginator !== 'left' && self[option].paginator !== 'right') self[option].paginator = 'none';
+      if (self[option].paginator !== 'none') {
+        viewport.style.position = 'relative';
+        self[paginator] = this[doc].createElement('div');
+        self._initPaginator();
+      }
     }
   }, {
     key: '_prevSlidesHeight',
@@ -441,6 +474,11 @@ var Scroll = function () {
       }
 
       self[lastAniTime] = now;
+    }
+  }, {
+    key: handleResize,
+    value: function value(e) {
+      this._initSlides();
     }
   }, {
     key: handleTouchMove,

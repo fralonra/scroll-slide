@@ -5,6 +5,7 @@ const duration = Symbol('duration');
 const handleDotClick = Symbol('handleDotClick');
 const handleKeyboard = Symbol('handleKeyboard');
 const handleMouseWheel = Symbol('handleMouseWheel');
+const handleResize = Symbol('handleResize');
 const handleTouchMove = Symbol('handleTouchMove');
 const handleTouchStart = Symbol('handleTouchStart');
 const isTouching = Symbol('isTouching');
@@ -20,90 +21,9 @@ const classNamePrefix = 'scroll-slide';
 
 class Scroll {
   constructor (opt = {}) {
-    const self = this;
-
-    const defaultOpt = {
-      duration: 1000,
-      dotColor: '#e1e1e1',
-      dotActiveColor: '#6687ff',
-      idleTime: 200,
-      loop: true,
-      keyboard: true,
-      paginator: 'none',
-      slides: [],
-      viewport: null,
-      onScroll: null
-    };
-    self[currentSlide] = 0;
-    self[doc] = global.document;
-    self[dotList] = null;
-    self[isTouching] = false;
-    self[lastAniTime] = 0;
-    self[paginator] = null;
-    self[scrollInSlide] = 0;
-    self[touchStartY] = 0;
-    self[win] = global;
-    self[wrapper] = null;
-    
-    self[option] = Object.assign(defaultOpt, opt);
-    self[duration] = self[option].duration;
-
-    self[option].slides = Array.from(self[option].slides);
-    const slides = self[option].slides;
-    slides.forEach(s => {
-      if (s instanceof Element) {
-      } else throw Error('section must be an instance of Element');
-    });
-
-    let viewport = self[option].viewport;
-    if (viewport === null) {
-      viewport = self[doc].getElementByTagName('body')[0];
-    }
-    viewport.classList.add(`${classNamePrefix}-viewport`);
-    viewport.style.position = 'relative';
-    if (viewport.style.height === '')
-      viewport.style.height = '100%';
-    viewport.style.overflow = 'hidden';
-    viewport.addEventListener('DOMMouseScroll', (e) => {
-      self[handleMouseWheel](e);
-    });
-    viewport.addEventListener('mousewheel', (e) => {
-      self[handleMouseWheel](e);
-    });
-    viewport.addEventListener('touchstart', (e) => {
-      self[handleTouchStart](e);
-    });
-    if (self[option].keyboard) {
-      self[doc].addEventListener('keydown', (e) => {
-        self[handleKeyboard](e);
-      });
-    }
-
-    self[wrapper] = self[doc].createElement('div');
-    self[wrapper].classList.add(`${classNamePrefix}-wrapper`);
-    self[wrapper].style.position = 'relative';
-    self[wrapper].style.top = '0px';
-
-    const d = String(self[duration]);
-    const durationText = d.match(/^\d+$/) ?
-      `${d}ms` :
-      defaultDuration;
-    self[wrapper].style.transition = `all ${durationText} ease 0s`;
-
-    slides.forEach(s => {
-      self._initSlide(s);
-    });
-    moveEl(self[wrapper], viewport);
-
-    if (self[option].paginator !== 'none' &&
-        self[option].paginator !== 'left' &&
-        self[option].paginator !== 'right')
-      self[option].paginator = 'none';
-    if (self[option].paginator !== 'none') {
-      viewport.style.position = 'relative';
-      self[paginator] = this[doc].createElement('div');
-      self._initPaginator();
-    }
+    this._initOption(opt);
+    this._initView();
+    this._initGlobalEvent();
   }
 
   // PUBLIC
@@ -268,6 +188,35 @@ class Scroll {
     this._initPaginatorTop();
   }
 
+  _initOption (opt = {}) {
+    const defaultOpt = {
+      autoHeight: true,
+      duration: 1000,
+      dotColor: '#e1e1e1',
+      dotActiveColor: '#6687ff',
+      idleTime: 200,
+      loop: true,
+      keyboard: true,
+      paginator: 'none',
+      slides: [],
+      viewport: null,
+      onScroll: null
+    };
+    this[currentSlide] = 0;
+    this[doc] = global.document;
+    this[dotList] = null;
+    this[isTouching] = false;
+    this[lastAniTime] = 0;
+    this[paginator] = null;
+    this[scrollInSlide] = 0;
+    this[touchStartY] = 0;
+    this[win] = global;
+    this[wrapper] = null;
+    
+    this[option] = Object.assign(defaultOpt, opt);
+    this[duration] = this[option].duration;
+  }
+
   _initDot (index = 0) {
     const dot = this[doc].createElement('div');
     dot.setAttribute('index', index);
@@ -306,6 +255,23 @@ class Scroll {
     el.style.height = `${height}px`;
   }
 
+  _initGlobalEvent () {
+    const self = this;
+
+    if (self[option].autoHeight) {
+      window.addEventListener('resize', (e) => {
+        self[handleResize](e);
+        self.scrollTo(self[currentSlide]);
+      });
+    }
+
+    if (self[option].keyboard) {
+      self[doc].addEventListener('keydown', (e) => {
+        self[handleKeyboard](e);
+      });
+    }
+  }
+
   _initPaginator (pos = this[option].paginator) {
     const p = this[paginator];
     p.classList.add(`${classNamePrefix}-paginator`);
@@ -333,6 +299,19 @@ class Scroll {
     moveEl(el, this[wrapper], i);
   }
 
+  _initSlides () {
+    this[option].slides = Array.from(this[option].slides);
+    const slides = this[option].slides;
+    slides.forEach(s => {
+      if (s instanceof Element) {
+      } else throw Error('section must be an instance of Element');
+    });
+    slides.forEach(s => {
+      this._initSlide(s);
+    });
+    moveEl(this[wrapper], this[option].viewport);
+  }
+
   _isFirstSlide () {
     return this[currentSlide] === 0;
   }
@@ -347,6 +326,52 @@ class Scroll {
 
   _isSlideMutiPages (i) {
     return this[option].slides[i].clientHeight > this[option].viewport.clientHeight;
+  }
+
+  _initView () {
+    const self = this;
+
+    let viewport = self[option].viewport;
+    if (viewport === null) {
+      viewport = self[doc].getElementByTagName('body')[0];
+    }
+    viewport.classList.add(`${classNamePrefix}-viewport`);
+    viewport.style.position = 'relative';
+    if (viewport.style.height === '')
+      viewport.style.height = '100%';
+    viewport.style.overflow = 'hidden';
+    viewport.addEventListener('DOMMouseScroll', (e) => {
+      self[handleMouseWheel](e);
+    });
+    viewport.addEventListener('mousewheel', (e) => {
+      self[handleMouseWheel](e);
+    });
+    viewport.addEventListener('touchstart', (e) => {
+      self[handleTouchStart](e);
+    });
+
+    self[wrapper] = self[doc].createElement('div');
+    self[wrapper].classList.add(`${classNamePrefix}-wrapper`);
+    self[wrapper].style.position = 'relative';
+    self[wrapper].style.top = '0px';
+
+    const d = String(self[duration]);
+    const durationText = d.match(/^\d+$/) ?
+      `${d}ms` :
+      defaultDuration;
+    self[wrapper].style.transition = `all ${durationText} ease 0s`;
+
+    self._initSlides();
+
+    if (self[option].paginator !== 'none' &&
+        self[option].paginator !== 'left' &&
+        self[option].paginator !== 'right')
+      self[option].paginator = 'none';
+    if (self[option].paginator !== 'none') {
+      viewport.style.position = 'relative';
+      self[paginator] = this[doc].createElement('div');
+      self._initPaginator();
+    }
   }
 
   _prevSlidesHeight (index = this[currentSlide]) {
@@ -406,6 +431,10 @@ class Scroll {
     }
 
     self[lastAniTime] = now;
+  }
+
+  [handleResize] (e) {
+    this._initSlides();
   }
 
   [handleTouchMove] (e) {

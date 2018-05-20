@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/fralonra/scroll-slide.svg?branch=master)](https://travis-ci.org/fralonra/scroll-slide)
+[![npm version](https://img.shields.io/npm/v/scroll-slide.svg)](https://www.npmjs.com/package/scroll-slide)
 
 # scroll-slide
 
@@ -93,9 +94,10 @@ Toggles full mode of an element.
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| duration | How long the scolling animation will last in milliseconds. | Number | 1000 |
+| autoHeight | If true, the height of slides will be responsive to the height of window. | Boolean | true |
 | dotColor | The color for paginator dots. | String | '#e1e1e1' |
 | dotActiveColor | The color for paginator dot which is currently actived. | String | '#6687ff' |
+| duration | How long the scolling animation will last in milliseconds. | Number | 1000 |
 | idleTime | How long the browser won't respond to the scrolling action after last scrolling in millseconds. | Number | 200 |
 | loop | If the continuous loop mode to be enabled. | Boolean | true |
 | keyboard | If true, you can use up/down and pageUp/pageDown to navigate slides. | Boolean | true |
