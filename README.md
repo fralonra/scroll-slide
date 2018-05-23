@@ -22,24 +22,20 @@ Install the library via npm:
 npm install scroll-slide
 ```
 
-Or simply download files from this repo.
-Then link `scroll-slide.min.js` or `scroll-slide.js` in your HTML.
+Usage in HTML:
 ```html
 <script src="/path/to/scroll-slide.min.js"></script>
 ```
 
-### Basic examples
+In Node.js:
 ```javascript
-scroll({
-  viewport: document.getElementById('viewport'),
-  slides: document.querySelectorAll('#viewport section')
-});
+const Scroll = require('scroll-slide');
 ```
 
-or
+### Basic examples
 
 ```javascript
-const s = scroll({
+const scroll = new Scroll({
   viewport: document.getElementById('viewport'),
   slides: document.querySelectorAll('#viewport section'),
   paginator: 'right',

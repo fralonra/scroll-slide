@@ -1,8 +1,8 @@
 const gulp = require('gulp'),
-      babelify = require('babelify'),
-      bro = require('gulp-bro'),
-      rename = require('gulp-rename'),
-      uglify = require('gulp-uglify');
+  babelify = require('babelify'),
+  bro = require('gulp-bro'),
+  rename = require('gulp-rename'),
+  uglify = require('gulp-uglify');
 
 const pkg = require('./package.json');
 

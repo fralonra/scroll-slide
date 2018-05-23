@@ -1,11 +1,16 @@
 {
   "name": "scroll-slide",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Flexible and pure-js scrollable slides maker.",
   "main": "index.js",
   "scripts": {
-    "build": "npm install && gulp build",
-    "gulp": "gulp build"
+    "start": "node index.js",
+    "lint": "eslint --fix *.js",
+    "umd": "cross-env NODE_ENV=development browserify index.js -t envify -s Scroll -o scroll-slide.js",
+    "umd-min": "cross-env NODE_ENV=production browserify index.js -t envify -t babelify --presets [ env react ] -s Scroll -t uglifyify -o | uglifyjs --compress unused,dead_code -o scroll-slide.min.js",
+    "build": "npm run umd && npm run umd-min",
+    "watch": "cross-env NODE_ENV=development watchify index.js -t envify -s Scroll -o scroll-slide.js",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -18,17 +23,22 @@
     "url": "https://github.com/fralonra/scroll-slide/issues"
   },
   "homepage": "https://github.com/fralonra/scroll-slide#readme",
-  "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
     "babelify": "^8.0.0",
-    "gulp": "^3.9.1",
-    "gulp-bro": "^1.0.3",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^3.0.0"
-  },
-  "eslintIgnore": [
-    "dist"
-  ]
+    "browserify": "^16.2.2",
+    "cross-env": "^5.1.5",
+    "envify": "^4.1.0",
+    "eslint": "^4.19.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "uglify-es": "^3.3.9",
+    "uglifyify": "^5.0.0",
+    "watchify": "^3.11.0"
+  }
 }
