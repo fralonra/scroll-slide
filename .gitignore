@@ -58,5 +58,3 @@ typings/
 .env
 
 package-lock.json
-scroll-slide.js
-scroll-slide.min.js

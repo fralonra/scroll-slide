@@ -1,3 +1,24 @@
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Scroll = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function (global){
+// const currentSlide = Symbol('currentSlide');
+// const doc = Symbol('doc');
+// const dotList = Symbol('dotList');
+// const duration = Symbol('duration');
+// const handleDotClick = Symbol('handleDotClick');
+// const handleKeyboard = Symbol('handleKeyboard');
+// const handleMouseWheel = Symbol('handleMouseWheel');
+// const handleResize = Symbol('handleResize');
+// const handleTouchMove = Symbol('handleTouchMove');
+// const handleTouchStart = Symbol('handleTouchStart');
+// const isTouching = Symbol('isTouching');
+// const lastAniTime = Symbol('lastAniTime');
+// const option = Symbol('option');
+// const paginator = Symbol('paginator');
+// const scrollInSlide = Symbol('scrollInSlide');
+// const touchStartY = Symbol('touchStartY');
+// const win = Symbol('win');
+// const wrapper = Symbol('wrapper');
+
 const defaultDuration = 1000;
 const classNamePrefix = 'scroll-slide';
 
@@ -474,3 +495,7 @@ function strToNum (str) {
 }
 
 module.exports = Scroll;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}]},{},[1])(1)
+});
