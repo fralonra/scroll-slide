@@ -191,7 +191,14 @@ class Scroll {
     this._win = global;
     this._wrapper = null;
 
-    this._option = Object.assign(defaultOpt, opt);
+    this._option = {};
+    Object.keys(defaultOpt).forEach(k => {
+      if (opt.hasOwnProperty(k)) {
+        this._option[k] = opt[k];
+      } else {
+        this._option[k] = defaultOpt[k];
+      }
+    });
     this._duration = this._option.duration;
   }
 
@@ -281,7 +288,7 @@ class Scroll {
   }
 
   _initSlides () {
-    this._option.slides = Array.from(this._option.slides);
+    this._option.slides = [].slice.call(this._option.slides);
     const slides = this._option.slides;
     slides.forEach(s => {
       this._initSlide(s);
