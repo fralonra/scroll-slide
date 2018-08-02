@@ -152,16 +152,16 @@
         </section>
         <section>
           <div class="section-content">
-            <b>Slides with full mode.</b> The slide with <code class="code-word">full</code> attribute set to "true" will fill the viewport. If it's original height is larger than viewport's height, it will become a multi-pages slide (Slide 4). If the original height is smaller than viewport's height, the slide won't be larger than the viewport (Slide 3).
+            <b>Slides with full mode.</b> The slide with <code class="code-word">data-full</code> attribute set to "true" will fill the viewport. If it's original height is larger than viewport's height, it will become a multi-pages slide (Slide 4). If the original height is smaller than viewport's height, the slide won't be larger than the viewport (Slide 3).
           </div>
           <div class="section-demo">
             <div class="code">
               <pre><code class="html">
   &lt;div style="height: 200px" id="viewport4"&gt;
-    &lt;section class="slide" style="background: green;" full="true"&gt;Slide 1&lt;br&gt;With &lt;code&gt;full&lt;/code&gt; set to "true"&lt;/section&gt;
-    &lt;section class="slide" style="background: red;"&gt;Slide 2&lt;br&gt;Without &lt;code&gt;full&lt;/code&gt; set to "true"&lt;/section&gt;
-    &lt;section class="slide" style="height: 50px; background: orange;" full="true"&gt;Slide 3&lt;br&gt;With &lt;code&gt;full&lt;/code&gt; set to "true"&lt;br&gt;A&lt;br&gt;&lt;br&gt;LONG&lt;br&gt;&lt;br&gt;SLIDE&lt;br&gt;&lt;br&gt;!&lt;br&gt;&lt;/section&gt;
-    &lt;section class="slide" style="height: 350px; background: blue;" full="true"&gt;Slide 4&lt;br&gt;With &lt;code&gt;full&lt;/code&gt; set to "true"&lt;br&gt;A&lt;br&gt;&lt;br&gt;MUTI-PAGES&lt;br&gt;&lt;br&gt;SLIDE&lt;br&gt;&lt;br&gt;!&lt;br&gt;&lt;/section&gt;
+    &lt;section class="slide" style="background: green;" data-full="true"&gt;Slide 1&lt;br&gt;With &lt;code&gt;data-full&lt;/code&gt; set to "true"&lt;/section&gt;
+    &lt;section class="slide" style="background: red;"&gt;Slide 2&lt;br&gt;Without &lt;code&gt;data-full&lt;/code&gt; set to "true"&lt;/section&gt;
+    &lt;section class="slide" style="height: 50px; background: orange;" data-full="true"&gt;Slide 3&lt;br&gt;With &lt;code&gt;data-full&lt;/code&gt; set to "true"&lt;br&gt;A&lt;br&gt;&lt;br&gt;LONG&lt;br&gt;&lt;br&gt;SLIDE&lt;br&gt;&lt;br&gt;!&lt;br&gt;&lt;/section&gt;
+    &lt;section class="slide" style="height: 350px; background: blue;" data-full="true"&gt;Slide 4&lt;br&gt;With &lt;code&gt;data-full&lt;/code&gt; set to "true"&lt;br&gt;A&lt;br&gt;&lt;br&gt;MUTI-PAGES&lt;br&gt;&lt;br&gt;SLIDE&lt;br&gt;&lt;br&gt;!&lt;br&gt;&lt;/section&gt;
   &lt;/div&gt;
               </code></pre>
               <pre><code class="javascript">
@@ -173,10 +173,10 @@
             </div>
             <div class="showcase">
               <div style="height: 200px" id="viewport4">
-                <section class="slide" style="background: green;" full="true">Slide 1<br>With <code>full</code> set to "true"</section>
-                <section class="slide" style="background: red;">Slide 2<br>Without <code>full</code> set to "true"</section>
-                <section class="slide" style="height: 50px; background: orange;" full="true">Slide 3<br>With <code>full</code> set to "true"<br>A<br><br>LONG<br><br>SLIDE<br><br>!<br></section>
-                <section class="slide" style="height: 350px; background: blue;" full="true">Slide 4<br>With <code>full</code> set to "true"<br>A<br><br>MUTI-PAGES<br><br>SLIDE<br><br>!<br></section>
+                <section class="slide" style="background: green;" data-full="true">Slide 1<br>With <code>data-full</code> set to "true"</section>
+                <section class="slide" style="background: red;">Slide 2<br>Without <code>data-full</code> set to "true"</section>
+                <section class="slide" style="height: 50px; background: orange;" data-full="true">Slide 3<br>With <code>data-full</code> set to "true"<br>A<br><br>LONG<br><br>SLIDE<br><br>!<br></section>
+                <section class="slide" style="height: 350px; background: blue;" data-full="true">Slide 4<br>With <code>data-full</code> set to "true"<br>A<br><br>MUTI-PAGES<br><br>SLIDE<br><br>!<br></section>
               </div>
             </div>
             <script type="text/javascript">

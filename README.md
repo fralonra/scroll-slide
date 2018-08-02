@@ -46,10 +46,10 @@ const scroll = new Scroll({
 ```
 
 ### Full mode
-You can create slide which fills the entire viewport regardless of its original size by setting attribute `full` to 'true'.
+You can create slide which fills the entire viewport regardless of its original size by setting attribute `data-full` to 'true'.
 ```html
 <div id="viewport">
-  <section id="full" full="true">
+  <section id="full" data-full="true">
     This slide will fill the entire viewport.
   </section>
   <section id="nofull">

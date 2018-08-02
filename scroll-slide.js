@@ -123,11 +123,11 @@ class Scroll {
   }
 
   toggleFull (el) {
-    if (el.getAttribute('full') === 'true') {
-      el.removeAttribute('full');
+    if (el.getAttribute('data-full') === 'true') {
+      el.removeAttribute('data-full');
       el.style.height = '';
     } else {
-      el.setAttribute('full', 'true');
+      el.setAttribute('data-full', 'true');
       el.style.height = `${this._option.viewport.clientHeight}px`;
     }
   }
@@ -281,7 +281,7 @@ class Scroll {
   _initSlide (el, i = null) {
     el.classList.add(`${classNamePrefix}-slide`);
     el.style.overflow = 'hidden';
-    if (el.getAttribute('full') === 'true') {
+    if (el.getAttribute('data-full') === 'true') {
       this._initFullHeight(el);
     }
     moveEl(el, this._wrapper, i);
