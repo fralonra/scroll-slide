@@ -441,8 +441,6 @@ class Scroll {
   }
 
   _handleTouchStart (e) {
-    e.preventDefault();
-
     const self = this;
     if (e.touches && e.touches.length) {
       self._isTouching = true;

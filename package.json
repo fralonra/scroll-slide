@@ -1,13 +1,13 @@
 {
   "name": "scroll-slide",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Flexible and pure-js scrollable slides maker.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "lint": "eslint --fix *.js",
     "umd": "cross-env NODE_ENV=development browserify index.js -t envify -s Scroll -o scroll-slide.js",
-    "umd-min": "cross-env NODE_ENV=production browserify index.js -t envify -t babelify --presets [ env stage-1 ] -s Scroll -t uglifyify -o | uglifyjs --compress unused,dead_code -o scroll-slide.min.js",
+    "umd-min": "cross-env NODE_ENV=production browserify index.js -t envify -t babelify --presets [ env stage-1 ] -s Scroll -t uglifyify -c -m -o scroll-slide.min.js",
     "build": "npm run umd && npm run umd-min",
     "watch": "cross-env NODE_ENV=development watchify index.js -t envify -s Scroll -o scroll-slide.js"
   },
@@ -36,7 +36,6 @@
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.0.1",
-    "uglify-es": "^3.3.9",
     "uglifyify": "^5.0.0",
     "watchify": "^3.11.0"
   }
