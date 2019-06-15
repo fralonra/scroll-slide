@@ -27,9 +27,9 @@ Usage in HTML:
 <script src="/path/to/scroll-slide.min.js"></script>
 ```
 
-In Node.js:
+Or using es6:
 ```javascript
-const Scroll = require('scroll-slide');
+import Scroll from 'scroll-slide'
 ```
 
 ### Basic examples
@@ -40,9 +40,9 @@ const scroll = new Scroll({
   slides: document.querySelectorAll('#viewport section'),
   paginator: 'right',
   onScroll (i) {
-    alert(`This is slide ${i + 1}`);
+    alert(`This is slide ${i + 1}`)
   }
-});
+})
 ```
 
 ### Full mode

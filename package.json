@@ -2,14 +2,12 @@
   "name": "scroll-slide",
   "version": "1.0.1",
   "description": "Flexible and pure-js scrollable slides maker.",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node index.js",
-    "lint": "eslint --fix *.js",
-    "umd": "cross-env NODE_ENV=development browserify index.js -t envify -s Scroll -o scroll-slide.js",
-    "umd-min": "cross-env NODE_ENV=production browserify index.js -t envify -t babelify --presets [ env stage-1 ] -s Scroll -t uglifyify -c -m -o scroll-slide.min.js",
-    "build": "npm run umd && npm run umd-min",
-    "watch": "cross-env NODE_ENV=development watchify index.js -t envify -s Scroll -o scroll-slide.js"
+    "lint": "standard --fix src/*.js | snazzy",
+    "build": "rollup -c rollup.config.js",
+    "start:demo": "npx serve",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -23,20 +21,10 @@
   },
   "homepage": "https://github.com/fralonra/scroll-slide#readme",
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-1": "^6.24.1",
-    "babelify": "^8.0.0",
-    "browserify": "^16.2.2",
-    "cross-env": "^5.1.5",
-    "envify": "^4.1.0",
-    "eslint": "^4.19.1",
-    "eslint-config-standard": "^11.0.0",
-    "eslint-plugin-import": "^2.12.0",
-    "eslint-plugin-node": "^6.0.1",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.0.1",
-    "uglifyify": "^5.0.0",
-    "watchify": "^3.11.0"
+    "rollup": "^1.15.5",
+    "rollup-plugin-filesize": "^6.1.0",
+    "rollup-plugin-terser": "^5.0.0",
+    "snazzy": "^8.0.0",
+    "standard": "^12.0.1"
   }
 }
