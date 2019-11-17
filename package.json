@@ -1,13 +1,14 @@
 {
   "name": "scroll-slide",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Flexible and pure-js scrollable slides maker.",
   "main": "src/index.js",
   "scripts": {
     "lint": "standard --fix src/*.js | snazzy",
     "build": "rollup -c rollup.config.js",
     "start:demo": "npx serve",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "npm run lint"
   },
   "repository": {
     "type": "git",
