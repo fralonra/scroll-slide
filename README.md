@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/fralonra/scroll-slide.svg?branch=master)](https://travis-ci.org/fralonra/scroll-slide)
+[![Build Status](https://travis-ci.com/fralonra/scroll-slide.svg?branch=master)](https://travis-ci.com/fralonra/scroll-slide)
 [![npm version](https://img.shields.io/npm/v/scroll-slide.svg)](https://www.npmjs.com/package/scroll-slide)
 
 # scroll-slide
