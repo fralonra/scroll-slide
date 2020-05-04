@@ -4,10 +4,10 @@
   "description": "Flexible and pure-js scrollable slides maker.",
   "main": "src/index.js",
   "scripts": {
-    "lint": "standard --fix src/*.js | snazzy",
     "build": "rollup -c rollup.config.js",
-    "start:demo": "npx serve",
+    "lint": "standard --fix src/*.js | snazzy",
     "prepare": "npm run build",
+    "start:demo": "npx serve",
     "test": "npm run lint"
   },
   "repository": {
@@ -22,10 +22,24 @@
   },
   "homepage": "https://github.com/fralonra/scroll-slide#readme",
   "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "husky": "^4.2.5",
     "rollup": "^1.15.5",
     "rollup-plugin-filesize": "^6.1.0",
     "rollup-plugin-terser": "^5.0.0",
     "snazzy": "^8.0.0",
     "standard": "^12.0.1"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run test",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   }
 }
