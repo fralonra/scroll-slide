@@ -53,11 +53,11 @@ class Scroll {
   remove (index) {
     if (index >= this._option.slides.length - 1) return
 
+    this._wrapper.removeChild(this._option.slides[index])
+    this._option.slides.splice(index, 1)
     if (index === this._currentSlide && index === this._option.slides.length - 1) {
       this.scrollTo(0)
-    }
-
-    if (index < this._currentSlide) {
+    } else if (index < this._currentSlide) {
       this.scrollTo(this._currentSlide - 1)
     }
 
@@ -67,9 +67,6 @@ class Scroll {
         this._changePaginator(this._currentSlide - 1, this._currentSlide)
       }
     }
-
-    this._wrapper.removeChild(this._option.slides[index])
-    this._option.slides = this._option.slides.filter((s, i, arr) => i !== index)
   }
 
   scrollDown () {
@@ -270,9 +267,9 @@ class Scroll {
     this._paginator.addEventListener('click', (e) => {
       this._handleDotClick(e)
     })
-    
+
     this._initDotList()
-    
+
     this._option.viewport.appendChild(this._paginator)
     this._paginator.style.top = '50%'
     this._initPaginatorTop()
